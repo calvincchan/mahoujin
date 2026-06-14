@@ -17,8 +17,8 @@ vi.mock("@google/generative-ai", () => {
 import { analyzeDrawing } from "../gemini-adapter";
 
 const VALID_RESPONSE = {
-  archetype: "dragon",
-  element: "fire",
+  archetype: "fox",
+  element: "Fire",
   trait: "fierce",
   stats: { hp: 80, mp: 60, atk: 90, def: 70 },
   rarity: 3,
@@ -43,13 +43,21 @@ describe("analyzeDrawing", () => {
     const result = await analyzeDrawing("base64imagedata");
 
     expect(result).toMatchObject({
-      archetype: "dragon",
-      element: "fire",
+      archetype: "fox",
+      element: "Fire",
       trait: "fierce",
       stats: { hp: 80, mp: 60, atk: 90, def: 70 },
       rarity: 3,
       confidence: "high",
     });
+  });
+
+  it("routes unknown archetype to mysterious fallback", async () => {
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, archetype: "dragon" }));
+
+    const result = await analyzeDrawing("base64imagedata");
+
+    expect(result.archetype).toBe("mysterious");
   });
 
   it("returns mysterious creature when confidence is low", async () => {

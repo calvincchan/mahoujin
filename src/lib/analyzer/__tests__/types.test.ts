@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { CreatureAttributesSchema } from "../types";
 
 const VALID = {
-  archetype: "dragon",
-  element: "fire",
+  archetype: "fox",
+  element: "Fire",
   trait: "fierce",
   stats: { hp: 80, mp: 60, atk: 90, def: 70 },
   rarity: 3,
@@ -18,6 +18,18 @@ describe("CreatureAttributesSchema", () => {
   it("accepts any string element (schema relaxed to z.string())", () => {
     expect(() =>
       CreatureAttributesSchema.parse({ ...VALID, element: "Lightning" })
+    ).not.toThrow();
+  });
+
+  it("rejects unknown archetype", () => {
+    expect(() =>
+      CreatureAttributesSchema.parse({ ...VALID, archetype: "dragon" })
+    ).toThrow();
+  });
+
+  it("accepts mysterious archetype", () => {
+    expect(() =>
+      CreatureAttributesSchema.parse({ ...VALID, archetype: "mysterious" })
     ).not.toThrow();
   });
 

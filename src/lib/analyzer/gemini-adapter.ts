@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-
 import { SYSTEM_PROMPT } from "./prompt";
 import { CreatureAttributes, CreatureAttributesSchema } from "./types";
 import { MYSTERIOUS_CREATURE } from "./constants";
+import { ARCHETYPE_BLUEPRINT_KEYS } from "./archetypes";
 
 let _genAI: GoogleGenerativeAI | null = null;
 function getGenAI(): GoogleGenerativeAI {
@@ -17,11 +18,15 @@ function parseDataUrl(imageBase64: string): { mimeType: string; data: string } {
   return { mimeType: "image/jpeg", data: imageBase64 };
 }
 
-// Keep in sync with CreatureAttributesSchema in types.ts
+// Keep in sync with CreatureAttributesSchema in types.ts and ARCHETYPE_BLUEPRINT_KEYS
 const responseSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
-    archetype: { type: SchemaType.STRING },
+    archetype: {
+      type: SchemaType.STRING,
+      format: "enum",
+      enum: [...ARCHETYPE_BLUEPRINT_KEYS],
+    },
     element: { type: SchemaType.STRING },
     trait: { type: SchemaType.STRING },
     stats: {

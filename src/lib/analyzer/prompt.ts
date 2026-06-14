@@ -17,19 +17,22 @@ Stellar is rare and prismatic — use it only for multi-elemental or cosmically 
 `.trim();
 
 export const ARCHETYPE_LIST = `
-Valid archetypes (choose the closest match or use a descriptive word):
+Valid archetypes — you MUST pick exactly one from this list:
 caterpillar | fox | rodent | bat | canine | bear | butterfly | spider |
-regional-bird | serpent | turtle | magnet | weapon | mimic | yokai | domestic-cat
+regional-bird | serpent | turtle | magnet | weapon | mimic | yokai | domestic-cat | mysterious
+
+Use "mysterious" when the circle is ambiguous or the creature doesn't fit any other category.
+Do NOT invent new archetype names.
 `.trim();
 
 export const TRAIT_INSTRUCTIONS = `
-For the "trait" field, write a 2–3 sentence creative visual description that:
-- Describes distinctive physical features and elemental visual variants
-- References 2–4 existing Pokémon by name as design nudges for the image generator
-- Is vivid and specific enough to guide pixel art generation
+For the "trait" field, write a 2–3 sentence pure visual description of THIS creature's distinctive features:
+- Describe its unique body markings, shape, and elemental visual variants (colours, textures, effects)
+- Be vivid and specific about what makes this individual creature look different from others of its archetype
+- Do NOT name any Pokémon — design references are handled separately; the Trait is only for this creature's individual appearance
 
 Example:
-"A serpentine dragon coiled in glacial ice, with translucent crystal wings and frost breath that leaves prismatic trails. Its scales shift between arctic blue and deep violet under light. Inspired by Dragapult's phantom silhouette, Kyurem's jagged ice plating, and Glalie's hollow-eyed mask."
+"A serpentine creature coiled in glacial ice, with translucent crystal wings that catch the light like prisms. Its scales shift between arctic blue and deep violet, and each exhale leaves a trail of frozen mist in the air."
 `.trim();
 
 export const OUTPUT_SCHEMA_INSTRUCTIONS = `

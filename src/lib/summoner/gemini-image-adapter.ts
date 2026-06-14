@@ -4,22 +4,68 @@
 //       On free tier, generateCreatureSprite returns null → SVG fallback renders instead.
 import sharp from "sharp";
 import { CreatureAttributes } from "../analyzer/types";
+import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
 
-async function jpegToTransparentPng(jpegBase64: string): Promise<string> {
+const TRAIT_MAX_LENGTH = 600;
+
+function sanitizeTrait(trait: string): string {
+  return trait.replace(/[\r\n\t\x00-\x1F\x7F]/g, " ").trim().slice(0, TRAIT_MAX_LENGTH);
+}
+
+// Border-connected flood-fill: only near-white pixels reachable from the image border
+// become transparent. Interior white highlights (eyes, teeth, frost) are preserved.
+export async function jpegToTransparentPng(jpegBase64: string): Promise<string> {
   const buf = Buffer.from(jpegBase64, "base64");
   const { data, info } = await sharp(buf)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
 
+  const { width, height } = info;
   const pixels = new Uint8ClampedArray(data);
-  for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-    if (r > 240 && g > 240 && b > 240) pixels[i + 3] = 0;
+  const visited = new Uint8Array(width * height);
+
+  function isNearWhite(idx: number): boolean {
+    return pixels[idx] > 230 && pixels[idx + 1] > 230 && pixels[idx + 2] > 230;
+  }
+
+  const queue: number[] = [];
+  function enqueue(x: number, y: number) {
+    if (x < 0 || x >= width || y < 0 || y >= height) return;
+    const pos = y * width + x;
+    if (visited[pos]) return;
+    if (!isNearWhite(pos * 4)) return;
+    visited[pos] = 1;
+    queue.push(x, y);
+  }
+
+  for (let x = 0; x < width; x++) { enqueue(x, 0); enqueue(x, height - 1); }
+  for (let y = 1; y < height - 1; y++) { enqueue(0, y); enqueue(width - 1, y); }
+
+  while (queue.length > 0) {
+    const y = queue.pop()!;
+    const x = queue.pop()!;
+    enqueue(x + 1, y); enqueue(x - 1, y);
+    enqueue(x, y + 1); enqueue(x, y - 1);
+  }
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pos = y * width + x;
+      if (!visited[pos]) continue;
+      const i = pos * 4;
+      // 1px feather: check if any 4-neighbour is NOT keyed (solid pixel boundary)
+      const hasEdge =
+        (x > 0 && !visited[pos - 1]) ||
+        (x < width - 1 && !visited[pos + 1]) ||
+        (y > 0 && !visited[pos - width]) ||
+        (y < height - 1 && !visited[pos + width]);
+      pixels[i + 3] = hasEdge ? 128 : 0;
+    }
   }
 
   const png = await sharp(Buffer.from(pixels), {
-    raw: { width: info.width, height: info.height, channels: 4 },
+    raw: { width, height, channels: 4 },
   }).png().toBuffer();
 
   return png.toString("base64");
@@ -58,12 +104,16 @@ const RARITY_MODIFIER: Record<number, string> = {
 export function buildCreaturePrompt(attrs: CreatureAttributes): string {
   const palette = ELEMENT_PALETTE[attrs.element] ?? "silver and grey";
   const rarityMod = RARITY_MODIFIER[attrs.rarity] ?? "common";
+  const blueprint = ARCHETYPE_REGISTRY[attrs.archetype];
+  const inspirations = blueprint.commonInspirations.join(", ");
+  const trait = sanitizeTrait(attrs.trait);
 
   return [
+    `${trait}`,
     `Modern isometric 16-bit pixel art sprite,`,
-    `${attrs.archetype} creature,`,
+    `${blueprint.name} creature,`,
     `${attrs.element} elemental with ${palette} color palette,`,
-    `${attrs.trait} expression and personality,`,
+    `inspired by ${inspirations},`,
     `${rarityMod},`,
     `highly detailed blocky pixel art, crisp pixel edges, rich shading and highlights,`,
     `intricate body markings, expressive eyes, dynamic silhouette,`,
