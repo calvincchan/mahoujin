@@ -22,11 +22,4 @@ export const CreatureAttributesSchema = z.object({
 
 export type CreatureAttributes = z.infer<typeof CreatureAttributesSchema>;
 
-export const MYSTERIOUS_CREATURE: CreatureAttributes = {
-  archetype: "mysterious",
-  element: "void",
-  trait: "enigmatic",
-  stats: { hp: 85, mp: 90, atk: 75, def: 80 },
-  rarity: 5,
-  confidence: "low",
-};
+export { MYSTERIOUS_CREATURE } from "./constants";
