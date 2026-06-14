@@ -2,7 +2,28 @@
 // Question: can Gemini image gen produce acceptable pixel art sprites?
 // NOTE: Gemini image models (gemini-2.5-flash-image etc.) require a paid API plan.
 //       On free tier, generateCreatureSprite returns null → SVG fallback renders instead.
+import sharp from "sharp";
 import { CreatureAttributes } from "../analyzer/types";
+
+async function jpegToTransparentPng(jpegBase64: string): Promise<string> {
+  const buf = Buffer.from(jpegBase64, "base64");
+  const { data, info } = await sharp(buf)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const pixels = new Uint8ClampedArray(data);
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+    if (r > 240 && g > 240 && b > 240) pixels[i + 3] = 0;
+  }
+
+  const png = await sharp(Buffer.from(pixels), {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  }).png().toBuffer();
+
+  return png.toString("base64");
+}
 
 const ELEMENT_PALETTE: Record<string, string> = {
   fire: "crimson and orange",
@@ -85,8 +106,8 @@ export async function generateCreatureSprite(
     if (step.type === "model_output") {
       for (const block of step.content ?? []) {
         if (block.type === "image" && block.data) {
-          const mime = block.mime_type ?? "image/png";
-          return `data:${mime};base64,${block.data}`;
+          const pngBase64 = await jpegToTransparentPng(block.data);
+          return `data:image/png;base64,${pngBase64}`;
         }
       }
     }
