@@ -22,11 +22,7 @@ const responseSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
     archetype: { type: SchemaType.STRING },
-    element: {
-      type: SchemaType.STRING,
-      format: "enum",
-      enum: ["fire", "water", "earth", "wind", "void", "unknown"],
-    },
+    element: { type: SchemaType.STRING },
     trait: { type: SchemaType.STRING },
     stats: {
       type: SchemaType.OBJECT,

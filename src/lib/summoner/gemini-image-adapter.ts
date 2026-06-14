@@ -26,12 +26,25 @@ async function jpegToTransparentPng(jpegBase64: string): Promise<string> {
 }
 
 const ELEMENT_PALETTE: Record<string, string> = {
-  fire: "crimson and orange",
-  water: "cyan and deep blue",
-  earth: "forest green and brown",
-  wind: "pale blue and white",
-  void: "deep purple and black",
-  unknown: "silver and grey",
+  Normal:    "warm beige and soft white",
+  Fire:      "crimson and orange",
+  Water:     "cyan and deep blue",
+  Grass:     "leaf green and golden yellow",
+  Electric:  "bright yellow and white sparks",
+  Ice:       "pale blue and crystal white",
+  Fighting:  "deep red and earthy brown",
+  Poison:    "toxic purple and acid green",
+  Ground:    "sandy brown and terracotta",
+  Flying:    "sky blue and cloud white",
+  Psychic:   "hot pink and lavender",
+  Bug:       "lime green and carapace brown",
+  Rock:      "granite grey and sandstone",
+  Ghost:     "dark indigo and pale violet",
+  Dragon:    "midnight blue and metallic gold",
+  Dark:      "charcoal black and deep crimson",
+  Steel:     "silver and metallic blue",
+  Fairy:     "rose pink and iridescent white",
+  Stellar:   "prismatic rainbow and starlight silver",
 };
 
 const RARITY_MODIFIER: Record<number, string> = {
@@ -119,12 +132,25 @@ export async function generateCreatureSprite(
 // SVG placeholder — renders when image gen quota is unavailable (free tier).
 // Used by /api/summon as fallback so the UI flow is testable without a paid key.
 const ELEMENT_SVG_COLOR: Record<string, [string, string]> = {
-  fire:    ["#dc2626", "#f97316"],
-  water:   ["#0284c7", "#22d3ee"],
-  earth:   ["#15803d", "#a16207"],
-  wind:    ["#bae6fd", "#e0f2fe"],
-  void:    ["#7e22ce", "#1e1b4b"],
-  unknown: ["#94a3b8", "#cbd5e1"],
+  Normal:   ["#a8a878", "#c8c8a0"],
+  Fire:     ["#dc2626", "#f97316"],
+  Water:    ["#0284c7", "#22d3ee"],
+  Grass:    ["#16a34a", "#ca8a04"],
+  Electric: ["#eab308", "#fef9c3"],
+  Ice:      ["#7dd3fc", "#e0f2fe"],
+  Fighting: ["#b91c1c", "#78350f"],
+  Poison:   ["#7e22ce", "#65a30d"],
+  Ground:   ["#b45309", "#c2410c"],
+  Flying:   ["#38bdf8", "#e0f2fe"],
+  Psychic:  ["#ec4899", "#c084fc"],
+  Bug:      ["#65a30d", "#a16207"],
+  Rock:     ["#78716c", "#d6d3d1"],
+  Ghost:    ["#4338ca", "#c4b5fd"],
+  Dragon:   ["#1e3a8a", "#d97706"],
+  Dark:     ["#1c1917", "#991b1b"],
+  Steel:    ["#94a3b8", "#1d4ed8"],
+  Fairy:    ["#f472b6", "#f0fdf4"],
+  Stellar:  ["#6d28d9", "#e0f2fe"],
 };
 
 export function buildFallbackSvg(attrs: CreatureAttributes): string {

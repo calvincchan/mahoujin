@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CreatureAttributesSchema = z.object({
   archetype: z.string(),
-  element: z.enum(["fire", "water", "earth", "wind", "void", "unknown"]),
+  element: z.string(),
   trait: z.string(),
   stats: z.object({
     hp: z.number().int().min(1).max(100),
