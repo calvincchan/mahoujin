@@ -85,4 +85,12 @@ describe("analyzeDrawing", () => {
 
     expect(result.archetype).toBe("mysterious");
   });
+
+  it("returns mysterious creature when Gemini returns valid JSON that fails Zod schema", async () => {
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, element: "lightning", rarity: 99 }));
+
+    const result = await analyzeDrawing("base64imagedata");
+
+    expect(result.archetype).toBe("mysterious");
+  });
 });
