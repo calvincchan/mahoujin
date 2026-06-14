@@ -29,7 +29,7 @@ export function useCameraStream(): CameraHandle {
         const video = videoRef.current;
         if (video) {
           video.srcObject = stream;
-          video.play().then(() => setReady(true));
+          video.play().then(() => setReady(true)).catch((e: Error) => { if (active) setError(e.message); });
         }
       })
       .catch((e: Error) => {

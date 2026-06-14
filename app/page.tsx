@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCameraStream } from "@/components/CameraModule";
 import { RingOverlay } from "@/components/RingOverlay";
 
@@ -27,9 +28,9 @@ export default function CaptureScreen() {
 
       {/* Top nav */}
       <nav className="absolute top-0 left-0 right-0 flex justify-end px-4 py-3 z-20">
-        <a href="/shelf" aria-label="Crystal shelf" className="text-amber-400/70 text-2xl leading-none">
+        <Link href="/shelf" aria-label="Crystal shelf" className="text-amber-400/70 text-2xl leading-none">
           ◈
-        </a>
+        </Link>
       </nav>
 
       {/* Ring overlay — always visible */}
