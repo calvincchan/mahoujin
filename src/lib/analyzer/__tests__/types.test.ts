@@ -15,10 +15,10 @@ describe("CreatureAttributesSchema", () => {
     expect(() => CreatureAttributesSchema.parse(VALID)).not.toThrow();
   });
 
-  it("rejects invalid element enum", () => {
+  it("accepts any string element (schema relaxed to z.string())", () => {
     expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, element: "lightning" })
-    ).toThrow();
+      CreatureAttributesSchema.parse({ ...VALID, element: "Lightning" })
+    ).not.toThrow();
   });
 
   it("rejects invalid confidence enum", () => {

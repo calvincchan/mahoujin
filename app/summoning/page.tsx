@@ -5,12 +5,25 @@ import { useEffect, useState } from "react";
 import { CreatureAttributes, CreatureAttributesSchema } from "@/src/lib/analyzer/types";
 
 const ELEMENT_FALLBACK: Record<string, string> = {
-  fire: "🔥",
-  water: "💧",
-  earth: "🌿",
-  wind: "💨",
-  void: "🌑",
-  unknown: "✨",
+  Normal:   "⭐",
+  Fire:     "🔥",
+  Water:    "💧",
+  Grass:    "🌿",
+  Electric: "⚡",
+  Ice:      "❄️",
+  Fighting: "🥊",
+  Poison:   "☠️",
+  Ground:   "🏔️",
+  Flying:   "🌬️",
+  Psychic:  "🔮",
+  Bug:      "🐛",
+  Rock:     "🪨",
+  Ghost:    "👻",
+  Dragon:   "🐉",
+  Dark:     "🌑",
+  Steel:    "⚙️",
+  Fairy:    "🧚",
+  Stellar:  "✨",
 };
 
 export default function SummoningPage() {
