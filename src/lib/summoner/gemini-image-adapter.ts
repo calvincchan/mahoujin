@@ -60,10 +60,10 @@ export function buildCreaturePrompt(attrs: CreatureAttributes): string {
   const rarityMod = RARITY_MODIFIER[attrs.rarity] ?? "common";
 
   return [
+    attrs.trait,
     `Modern isometric 16-bit pixel art sprite,`,
     `${attrs.archetype} creature,`,
     `${attrs.element} elemental with ${palette} color palette,`,
-    `${attrs.trait} expression and personality,`,
     `${rarityMod},`,
     `highly detailed blocky pixel art, crisp pixel edges, rich shading and highlights,`,
     `intricate body markings, expressive eyes, dynamic silhouette,`,
