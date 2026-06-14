@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MYSTERIOUS_CREATURE } from "@/src/lib/analyzer/constants";
 
 const FLAVOUR_TEXTS = [
   "Reading the magic circle…",
@@ -44,16 +45,7 @@ export default function AnalysisPage() {
         const attrs = await res.json();
         sessionStorage.setItem("mahoujin_attrs", JSON.stringify(attrs));
       } catch {
-        // Analyzer already falls back internally; if network fails, use mysterious
-        const mysterious = {
-          archetype: "mysterious",
-          element: "void",
-          trait: "enigmatic",
-          stats: { hp: 85, mp: 90, atk: 75, def: 80 },
-          rarity: 5,
-          confidence: "low",
-        };
-        sessionStorage.setItem("mahoujin_attrs", JSON.stringify(mysterious));
+        sessionStorage.setItem("mahoujin_attrs", JSON.stringify(MYSTERIOUS_CREATURE));
       }
 
       router.replace("/summoning");
