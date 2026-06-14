@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { CreatureAttributes } from "@/src/lib/analyzer/types";
 
 const SAMPLES: CreatureAttributes[] = [
-  { archetype: "dragon",     element: "fire",    trait: "fierce",    stats: { hp: 80, mp: 60, atk: 90, def: 50 }, rarity: 4, confidence: "high" },
-  { archetype: "fox",        element: "void",    trait: "cunning",   stats: { hp: 65, mp: 95, atk: 70, def: 45 }, rarity: 5, confidence: "high" },
-  { archetype: "golem",      element: "earth",   trait: "stoic",     stats: { hp: 95, mp: 30, atk: 75, def: 95 }, rarity: 3, confidence: "high" },
-  { archetype: "spirit",     element: "wind",    trait: "playful",   stats: { hp: 50, mp: 90, atk: 55, def: 40 }, rarity: 2, confidence: "high" },
-  { archetype: "mysterious", element: "unknown", trait: "enigmatic", stats: { hp: 85, mp: 90, atk: 75, def: 80 }, rarity: 5, confidence: "low"  },
+  { archetype: "serpent",    element: "Dragon",  trait: "fierce",    stats: { hp: 80, mp: 60, atk: 90, def: 50 }, rarity: 4, confidence: "high" },
+  { archetype: "fox",        element: "Ghost",   trait: "cunning",   stats: { hp: 65, mp: 95, atk: 70, def: 45 }, rarity: 5, confidence: "high" },
+  { archetype: "turtle",     element: "Rock",    trait: "stoic",     stats: { hp: 95, mp: 30, atk: 75, def: 95 }, rarity: 3, confidence: "high" },
+  { archetype: "regional-bird", element: "Flying", trait: "playful", stats: { hp: 50, mp: 90, atk: 55, def: 40 }, rarity: 2, confidence: "high" },
+  { archetype: "mysterious", element: "Stellar", trait: "enigmatic", stats: { hp: 85, mp: 90, atk: 75, def: 80 }, rarity: 5, confidence: "low"  },
 ];
 
 export default function DevSeedPage() {

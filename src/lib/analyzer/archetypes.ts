@@ -1,3 +1,23 @@
+export const ARCHETYPE_BLUEPRINT_KEYS = [
+  "caterpillar",
+  "fox",
+  "rodent",
+  "bat",
+  "canine",
+  "bear",
+  "butterfly",
+  "spider",
+  "regional-bird",
+  "serpent",
+  "turtle",
+  "magnet",
+  "weapon",
+  "mimic",
+  "yokai",
+  "domestic-cat",
+  "mysterious",
+] as const;
+
 export type ArchetypeCategory =
   | "Mammalian"
   | "Insectoid"
@@ -6,23 +26,7 @@ export type ArchetypeCategory =
   | "Inorganic"
   | "Mythological";
 
-export type ArchetypeBlueprint =
-  | "caterpillar"
-  | "fox"
-  | "rodent"
-  | "bat"
-  | "canine"
-  | "bear"
-  | "butterfly"
-  | "spider"
-  | "regional-bird"
-  | "serpent"
-  | "turtle"
-  | "magnet"
-  | "weapon"
-  | "mimic"
-  | "yokai"
-  | "domestic-cat";
+export type ArchetypeBlueprint = (typeof ARCHETYPE_BLUEPRINT_KEYS)[number];
 
 export interface PokemonArchetype {
   id: ArchetypeBlueprint;
@@ -159,5 +163,12 @@ export const ARCHETYPE_REGISTRY: Record<ArchetypeBlueprint, PokemonArchetype> = 
     description: "A sleek house cat with retractable claws and an air of aristocratic indifference. Elemental variants may have fire-tipped tails, ice-crystal whiskers, or psychic halos.",
     evolutionaryPattern: "kitten → regal adult",
     commonInspirations: ["Meowth", "Skitty", "Glameow", "Espurr"],
+  },
+  mysterious: {
+    id: "mysterious",
+    name: "Mysterious",
+    category: "Mythological",
+    description: "A stellar entity of unknown origin, shimmering with cosmic energy and starlight. Its form shifts between states — sometimes solid, sometimes translucent — as though existing in multiple dimensions at once.",
+    commonInspirations: ["Cosmog", "Jirachi", "Clefairy", "Mew"],
   },
 };

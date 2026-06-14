@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { ARCHETYPE_BLUEPRINT_KEYS } from "./archetypes";
 
 export const CreatureAttributesSchema = z.object({
-  archetype: z.string(),
+  archetype: z.enum(ARCHETYPE_BLUEPRINT_KEYS),
   element: z.string(),
   trait: z.string(),
   stats: z.object({
