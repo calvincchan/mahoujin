@@ -49,8 +49,16 @@ export const CreatureAttributesSchema = z.object({
 export type CreatureAttributes = z.infer<typeof CreatureAttributesSchema>;
 
 export type SavedCreature = CreatureAttributes & {
-  category: ArchetypeCategory;
+  /** UUID assigned at save time. */
+  id: string;
+  /** Player's final name — defaults to `creatureName`, overwritten on rename. */
   name: string;
+  /** Denormalized from the Archetype Registry at save time. */
+  category: ArchetypeCategory;
+  /** Rendered creature sprite (data URL). */
+  imageUrl: string;
+  /** ISO timestamp of when the creature was kept. */
+  capturedAt: string;
 };
 
 export { MYSTERIOUS_CREATURE } from "./constants";

@@ -59,3 +59,33 @@
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
+
+/* Release: creature dissolves, fading and lifting as it scatters. */
+@keyframes release-dissolve {
+  0%   { transform: scale(1) translateY(0);      opacity: 1; filter: blur(0); }
+  100% { transform: scale(1.15) translateY(-40px); opacity: 0; filter: blur(8px); }
+}
+
+.release-dissolve {
+  animation: release-dissolve 1.1s ease-in forwards;
+}
+
+/* Release: particles burst upward and scatter as the creature dissolves. */
+@keyframes release-particle {
+  0%   { transform: translate(0, 0) scale(1);            opacity: 1; }
+  100% { transform: translate(var(--dx), -120px) scale(0.2); opacity: 0; }
+}
+
+.release-particle {
+  animation: release-particle 1.1s ease-out forwards;
+}
+
+/* Keep: bottom sheet slides up into view. */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.sheet-up {
+  animation: sheet-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
