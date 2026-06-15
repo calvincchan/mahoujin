@@ -1,6 +1,6 @@
 import sharp from "sharp";
-import { CreatureAttributes } from "../analyzer/types";
 import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
+import { CreatureAttributes } from "../analyzer/types";
 
 const DESCRIPTION_MAX_LENGTH = 900;
 
@@ -72,25 +72,25 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
 }
 
 const ELEMENT_PALETTE: Record<string, string> = {
-  Normal:    "warm beige and soft white",
-  Fire:      "crimson and orange",
-  Water:     "cyan and deep blue",
-  Grass:     "leaf green and golden yellow",
-  Electric:  "bright yellow and white sparks",
-  Ice:       "pale blue and crystal white",
-  Fighting:  "deep red and earthy brown",
-  Poison:    "toxic purple and acid green",
-  Ground:    "sandy brown and terracotta",
-  Flying:    "sky blue and cloud white",
-  Psychic:   "hot pink and lavender",
-  Bug:       "lime green and carapace brown",
-  Rock:      "granite grey and sandstone",
-  Ghost:     "dark indigo and pale violet",
-  Dragon:    "midnight blue and metallic gold",
-  Dark:      "charcoal black and deep crimson",
-  Steel:     "silver and metallic blue",
-  Fairy:     "rose pink and iridescent white",
-  Stellar:   "prismatic rainbow and starlight silver",
+  Normal: "warm beige and soft white",
+  Fire: "crimson and orange",
+  Water: "cyan and deep blue",
+  Grass: "leaf green and golden yellow",
+  Electric: "bright yellow and white sparks",
+  Ice: "pale blue and crystal white",
+  Fighting: "deep red and earthy brown",
+  Poison: "toxic purple and acid green",
+  Ground: "sandy brown and terracotta",
+  Flying: "sky blue and cloud white",
+  Psychic: "hot pink and lavender",
+  Bug: "lime green and carapace brown",
+  Rock: "granite grey and sandstone",
+  Ghost: "dark indigo and pale violet",
+  Dragon: "midnight blue and metallic gold",
+  Dark: "charcoal black and deep crimson",
+  Steel: "silver and metallic blue",
+  Fairy: "rose pink and iridescent white",
+  Stellar: "prismatic rainbow and starlight silver",
 };
 
 const RARITY_MODIFIER: Record<number, string> = {
@@ -105,7 +105,8 @@ const RARITY_MODIFIER: Record<number, string> = {
 // (e.g. anime/chibi, watercolour) without touching the content/data path.
 const ART_STYLE_PROMPT =
   "Modern isometric 16-bit pixel art sprite, highly detailed blocky pixel art, " +
-  "crisp pixel edges, rich shading and highlights, nostalgic Pokémon-style sprite";
+  "crisp pixel edges, rich shading and highlights, nostalgic Pokémon-style sprite, " +
+  "no outer glow, no bloom, no aura halo around the creature.";
 
 // Uniform random sample without replacement (partial Fisher–Yates).
 // `Array.sort(() => Math.random() - 0.5)` is a biased shuffle, so use this instead.
@@ -136,7 +137,7 @@ export function buildCreaturePrompt(attrs: CreatureAttributes): string {
     `${rarityMod},`,
     `intricate body markings, expressive eyes, dynamic silhouette,`,
     `full body visible, facing left,`,
-    `centered on plain white background, no text, no watermark, no border`,
+    `centered on plain white background, no text, no watermark, no border, no outer glow, no bloom, no aura`,
   ].join(" ");
 }
 
@@ -158,6 +159,8 @@ export async function generateCreatureSprite(
   if (!apiKey) return null;
 
   const prompt = buildCreaturePrompt(attrs);
+
+  console.log(prompt);
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/interactions?key=${apiKey}`,
@@ -200,25 +203,25 @@ export async function generateCreatureSprite(
 // SVG placeholder — renders when image gen quota is unavailable (free tier).
 // Used by /api/summon as fallback so the UI flow is testable without a paid key.
 const ELEMENT_SVG_COLOR: Record<string, [string, string]> = {
-  Normal:   ["#a8a878", "#c8c8a0"],
-  Fire:     ["#dc2626", "#f97316"],
-  Water:    ["#0284c7", "#22d3ee"],
-  Grass:    ["#16a34a", "#ca8a04"],
+  Normal: ["#a8a878", "#c8c8a0"],
+  Fire: ["#dc2626", "#f97316"],
+  Water: ["#0284c7", "#22d3ee"],
+  Grass: ["#16a34a", "#ca8a04"],
   Electric: ["#eab308", "#fef9c3"],
-  Ice:      ["#7dd3fc", "#e0f2fe"],
+  Ice: ["#7dd3fc", "#e0f2fe"],
   Fighting: ["#b91c1c", "#78350f"],
-  Poison:   ["#7e22ce", "#65a30d"],
-  Ground:   ["#b45309", "#c2410c"],
-  Flying:   ["#38bdf8", "#e0f2fe"],
-  Psychic:  ["#ec4899", "#c084fc"],
-  Bug:      ["#65a30d", "#a16207"],
-  Rock:     ["#78716c", "#d6d3d1"],
-  Ghost:    ["#4338ca", "#c4b5fd"],
-  Dragon:   ["#1e3a8a", "#d97706"],
-  Dark:     ["#1c1917", "#991b1b"],
-  Steel:    ["#94a3b8", "#1d4ed8"],
-  Fairy:    ["#f472b6", "#f0fdf4"],
-  Stellar:  ["#6d28d9", "#e0f2fe"],
+  Poison: ["#7e22ce", "#65a30d"],
+  Ground: ["#b45309", "#c2410c"],
+  Flying: ["#38bdf8", "#e0f2fe"],
+  Psychic: ["#ec4899", "#c084fc"],
+  Bug: ["#65a30d", "#a16207"],
+  Rock: ["#78716c", "#d6d3d1"],
+  Ghost: ["#4338ca", "#c4b5fd"],
+  Dragon: ["#1e3a8a", "#d97706"],
+  Dark: ["#1c1917", "#991b1b"],
+  Steel: ["#94a3b8", "#1d4ed8"],
+  Fairy: ["#f472b6", "#f0fdf4"],
+  Stellar: ["#6d28d9", "#e0f2fe"],
 };
 
 export function buildFallbackSvg(attrs: CreatureAttributes): string {
