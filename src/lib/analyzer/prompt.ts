@@ -37,6 +37,7 @@ For the "description" field, write approximately 100 words describing THIS creat
 - Weave in personality hints (playful, aloof, fierce, gentle) through how the creature carries itself
 - Be vivid and specific about what makes this individual creature look and feel different from others of its archetype
 - Do NOT name any Pokémon — design references are handled separately
+- Do NOT describe outer glows, auras, or bloom halos around the creature's silhouette — these effects blur the creature's edge and make background removal unreliable
 
 Example:
 "A serpentine creature coiled in glacial ice, with translucent crystal wings that catch the light like prisms. Its scales shift between arctic blue and deep violet, and each exhale leaves a trail of frozen mist in the air. Despite its imposing size, it moves with a curious, almost playful grace — tilting its horned head as though studying the world with gentle interest. Frost flowers bloom wherever its tail touches the ground."
