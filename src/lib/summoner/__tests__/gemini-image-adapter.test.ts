@@ -27,13 +27,20 @@ describe("buildCreaturePrompt", () => {
     expect(found).toBe(true);
   });
 
-  it("samples 1–2 inspirations, not all", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
+  it("samples exactly one inspiration when count resolves to 1", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0); // count = (0 < 0.5) -> 1
     const prompt = buildCreaturePrompt(BASE_ATTRS);
     const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
     const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
-    expect(matchCount).toBeGreaterThanOrEqual(1);
-    expect(matchCount).toBeLessThanOrEqual(2);
+    expect(matchCount).toBe(1);
+  });
+
+  it("samples exactly two inspirations when count resolves to 2", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.9); // count = (0.9 < 0.5) -> 2
+    const prompt = buildCreaturePrompt(BASE_ATTRS);
+    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
+    const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
+    expect(matchCount).toBe(2);
   });
 
   it("includes the sanitized description at the start of the prompt", () => {
