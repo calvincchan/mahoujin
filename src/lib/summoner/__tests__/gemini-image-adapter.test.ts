@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { buildCreaturePrompt, jpegToTransparentPng } from "../gemini-image-adapter";
 import { ARCHETYPE_REGISTRY } from "../../analyzer/archetypes";
 import type { CreatureAttributes } from "../../analyzer/types";
@@ -7,24 +7,45 @@ import sharp from "sharp";
 const BASE_ATTRS: CreatureAttributes = {
   archetype: "fox",
   element: "Fire",
-  trait: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
+  creatureName: "Emberfang",
+  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
   stats: { hp: 70, mp: 60, atk: 80, def: 50 },
   rarity: 3,
   confidence: "high",
 };
 
 describe("buildCreaturePrompt", () => {
-  it("includes blueprint commonInspirations for the archetype", () => {
-    const prompt = buildCreaturePrompt(BASE_ATTRS);
-    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
-    for (const name of inspirations) {
-      expect(prompt).toContain(name);
-    }
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it("includes the sanitized trait at the start of the prompt", () => {
+  it("includes at least one blueprint commonInspiration for the archetype", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
     const prompt = buildCreaturePrompt(BASE_ATTRS);
-    expect(prompt).toContain(BASE_ATTRS.trait);
+    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
+    const found = inspirations.some((name) => prompt.includes(name));
+    expect(found).toBe(true);
+  });
+
+  it("samples exactly one inspiration when count resolves to 1", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0); // count = (0 < 0.5) -> 1
+    const prompt = buildCreaturePrompt(BASE_ATTRS);
+    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
+    const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
+    expect(matchCount).toBe(1);
+  });
+
+  it("samples exactly two inspirations when count resolves to 2", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.9); // count = (0.9 < 0.5) -> 2
+    const prompt = buildCreaturePrompt(BASE_ATTRS);
+    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
+    const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
+    expect(matchCount).toBe(2);
+  });
+
+  it("includes the sanitized description at the start of the prompt", () => {
+    const prompt = buildCreaturePrompt(BASE_ATTRS);
+    expect(prompt).toContain(BASE_ATTRS.description);
   });
 
   it("includes the blueprint name, not the raw archetype key", () => {
@@ -33,24 +54,24 @@ describe("buildCreaturePrompt", () => {
   });
 
   it("works for the mysterious archetype with its own inspirations", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
     const attrs: CreatureAttributes = { ...BASE_ATTRS, archetype: "mysterious", element: "Stellar" };
     const prompt = buildCreaturePrompt(attrs);
     const inspirations = ARCHETYPE_REGISTRY["mysterious"].commonInspirations;
-    for (const name of inspirations) {
-      expect(prompt).toContain(name);
-    }
+    const found = inspirations.some((name) => prompt.includes(name));
+    expect(found).toBe(true);
   });
 
-  it("caps an over-length trait at 600 chars", () => {
-    const longTrait = "x".repeat(800);
-    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, trait: longTrait });
-    expect(prompt).toContain("x".repeat(600));
-    expect(prompt).not.toContain("x".repeat(601));
+  it("caps an over-length description at ~900 chars", () => {
+    const longDescription = "x".repeat(1100);
+    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, description: longDescription });
+    expect(prompt).toContain("x".repeat(900));
+    expect(prompt).not.toContain("x".repeat(901));
   });
 
-  it("strips newlines from trait before placing it in the prompt", () => {
-    const traitWithNewlines = "A fox\nwith bright\r\nflames.";
-    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, trait: traitWithNewlines });
+  it("strips newlines from description before placing it in the prompt", () => {
+    const descriptionWithNewlines = "A fox\nwith bright\r\nflames.";
+    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, description: descriptionWithNewlines });
     expect(prompt).not.toMatch(/[\r\n]/);
     expect(prompt).toContain("A fox");
   });

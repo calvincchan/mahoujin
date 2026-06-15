@@ -19,7 +19,8 @@ import { analyzeDrawing } from "../gemini-adapter";
 const VALID_RESPONSE = {
   archetype: "fox",
   element: "Fire",
-  trait: "fierce",
+  creatureName: "Emberfang",
+  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
   stats: { hp: 80, mp: 60, atk: 90, def: 70 },
   rarity: 3,
   confidence: "high",
@@ -45,7 +46,8 @@ describe("analyzeDrawing", () => {
     expect(result).toMatchObject({
       archetype: "fox",
       element: "Fire",
-      trait: "fierce",
+      creatureName: "Emberfang",
+      description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
       stats: { hp: 80, mp: 60, atk: 90, def: 70 },
       rarity: 3,
       confidence: "high",
@@ -94,8 +96,16 @@ describe("analyzeDrawing", () => {
     expect(result.archetype).toBe("mysterious");
   });
 
+  it("routes off-enum element to mysterious fallback", async () => {
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, element: "lightning", rarity: 3 }));
+
+    const result = await analyzeDrawing("base64imagedata");
+
+    expect(result.archetype).toBe("mysterious");
+  });
+
   it("returns mysterious creature when Gemini returns valid JSON that fails Zod schema", async () => {
-    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, element: "lightning", rarity: 99 }));
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, rarity: 99 }));
 
     const result = await analyzeDrawing("base64imagedata");
 

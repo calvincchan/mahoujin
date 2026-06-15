@@ -96,7 +96,7 @@ export default function SummoningPage() {
         <div className="text-center space-y-1">
           <p className="text-amber-400 text-lg">{rarityStars}</p>
           <p className="capitalize text-zinc-300">
-            {attrs.element} · {attrs.trait}
+            {attrs.element} · {attrs.creatureName}
           </p>
           <div className="grid grid-cols-4 gap-3 mt-4 text-xs text-zinc-400">
             <div className="text-center"><div className="text-amber-300 font-bold">{attrs.stats.hp}</div><div>HP</div></div>

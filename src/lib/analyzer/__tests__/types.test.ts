@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { CreatureAttributesSchema } from "../types";
+import { CreatureAttributesSchema, ELEMENT_KEYS } from "../types";
 
 const VALID = {
   archetype: "fox",
   element: "Fire",
-  trait: "fierce",
+  creatureName: "Emberfang",
+  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
   stats: { hp: 80, mp: 60, atk: 90, def: 70 },
   rarity: 3,
   confidence: "high",
@@ -15,10 +16,18 @@ describe("CreatureAttributesSchema", () => {
     expect(() => CreatureAttributesSchema.parse(VALID)).not.toThrow();
   });
 
-  it("accepts any string element (schema relaxed to z.string())", () => {
+  it("rejects unknown element", () => {
     expect(() =>
       CreatureAttributesSchema.parse({ ...VALID, element: "Lightning" })
-    ).not.toThrow();
+    ).toThrow();
+  });
+
+  it("accepts all 19 valid elements", () => {
+    for (const el of ELEMENT_KEYS) {
+      expect(() =>
+        CreatureAttributesSchema.parse({ ...VALID, element: el })
+      ).not.toThrow();
+    }
   });
 
   it("rejects unknown archetype", () => {
@@ -76,8 +85,13 @@ describe("CreatureAttributesSchema", () => {
     ).toThrow();
   });
 
-  it("rejects missing top-level field", () => {
-    const { trait: _trait, ...withoutTrait } = VALID;
-    expect(() => CreatureAttributesSchema.parse(withoutTrait)).toThrow();
+  it("rejects missing top-level field (description)", () => {
+    const { description: _description, ...withoutDescription } = VALID;
+    expect(() => CreatureAttributesSchema.parse(withoutDescription)).toThrow();
+  });
+
+  it("rejects missing top-level field (creatureName)", () => {
+    const { creatureName: _creatureName, ...withoutCreatureName } = VALID;
+    expect(() => CreatureAttributesSchema.parse(withoutCreatureName)).toThrow();
   });
 });

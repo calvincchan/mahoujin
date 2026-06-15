@@ -25,14 +25,21 @@ Use "mysterious" when the circle is ambiguous or the creature doesn't fit any ot
 Do NOT invent new archetype names.
 `.trim();
 
-export const TRAIT_INSTRUCTIONS = `
-For the "trait" field, write a 2–3 sentence pure visual description of THIS creature's distinctive features:
+export const CREATURE_NAME_INSTRUCTIONS = `
+For the "creatureName" field, invent a short, original name for this individual creature (1–3 words, Title Case).
+The name should feel whimsical and suitable for a children's game. Do NOT use real Pokémon names.
+Examples: "Emberfang", "Crystal Sprite", "Shadowmoss"
+`.trim();
+
+export const DESCRIPTION_INSTRUCTIONS = `
+For the "description" field, write approximately 100 words describing THIS creature's distinctive visual appearance and personality:
 - Describe its unique body markings, shape, and elemental visual variants (colours, textures, effects)
-- Be vivid and specific about what makes this individual creature look different from others of its archetype
-- Do NOT name any Pokémon — design references are handled separately; the Trait is only for this creature's individual appearance
+- Weave in personality hints (playful, aloof, fierce, gentle) through how the creature carries itself
+- Be vivid and specific about what makes this individual creature look and feel different from others of its archetype
+- Do NOT name any Pokémon — design references are handled separately
 
 Example:
-"A serpentine creature coiled in glacial ice, with translucent crystal wings that catch the light like prisms. Its scales shift between arctic blue and deep violet, and each exhale leaves a trail of frozen mist in the air."
+"A serpentine creature coiled in glacial ice, with translucent crystal wings that catch the light like prisms. Its scales shift between arctic blue and deep violet, and each exhale leaves a trail of frozen mist in the air. Despite its imposing size, it moves with a curious, almost playful grace — tilting its horned head as though studying the world with gentle interest. Frost flowers bloom wherever its tail touches the ground."
 `.trim();
 
 export const OUTPUT_SCHEMA_INSTRUCTIONS = `
@@ -40,12 +47,14 @@ Return ONLY valid JSON matching this exact shape:
 {
   "archetype": string,
   "element": string,
-  "trait": string,
+  "creatureName": string,
+  "description": string,
   "stats": { "hp": number, "mp": number, "atk": number, "def": number },
   "rarity": 1 | 2 | 3 | 4 | 5,
   "confidence": "high" | "low"
 }
 
+element must be exactly one of: Normal | Fire | Water | Grass | Electric | Ice | Fighting | Poison | Ground | Flying | Psychic | Bug | Rock | Ghost | Dragon | Dark | Steel | Fairy | Stellar
 Set confidence to "low" if the drawing is ambiguous, unclear, or unreadable.
 All stat values must be integers between 1 and 100.
 `.trim();
@@ -64,7 +73,9 @@ ${ELEMENT_LIST}
 
 ${ARCHETYPE_LIST}
 
-${TRAIT_INSTRUCTIONS}
+${CREATURE_NAME_INSTRUCTIONS}
+
+${DESCRIPTION_INSTRUCTIONS}
 
 ${OUTPUT_SCHEMA_INSTRUCTIONS}
 `.trim();

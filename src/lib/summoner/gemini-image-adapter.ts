@@ -1,16 +1,16 @@
-// PROTOTYPE — throwaway. See app/summoning/page.tsx + app/api/summon/route.ts
-// Question: can Gemini image gen produce acceptable pixel art sprites?
-// NOTE: Gemini image models (gemini-2.5-flash-image etc.) require a paid API plan.
-//       On free tier, generateCreatureSprite returns null → SVG fallback renders instead.
 import sharp from "sharp";
 import { CreatureAttributes } from "../analyzer/types";
 import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
 
-const TRAIT_MAX_LENGTH = 600;
+const DESCRIPTION_MAX_LENGTH = 900;
 
-function sanitizeTrait(trait: string): string {
-  return trait.replace(/[\r\n\t\x00-\x1F\x7F]/g, " ").trim().slice(0, TRAIT_MAX_LENGTH);
+function sanitizeDescription(description: string): string {
+  return description.replace(/[\r\n\t\x00-\x1F\x7F]/g, " ").trim().slice(0, DESCRIPTION_MAX_LENGTH);
 }
+
+const NEAR_WHITE_THRESHOLD = 242;
+const EDGE_FEATHER_ALPHA = 128;
+const KEYED_ALPHA = 0;
 
 // Border-connected flood-fill: only near-white pixels reachable from the image border
 // become transparent. Interior white highlights (eyes, teeth, frost) are preserved.
@@ -26,7 +26,7 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
   const visited = new Uint8Array(width * height);
 
   function isNearWhite(idx: number): boolean {
-    return pixels[idx] > 230 && pixels[idx + 1] > 230 && pixels[idx + 2] > 230;
+    return pixels[idx] > NEAR_WHITE_THRESHOLD && pixels[idx + 1] > NEAR_WHITE_THRESHOLD && pixels[idx + 2] > NEAR_WHITE_THRESHOLD;
   }
 
   const queue: number[] = [];
@@ -60,7 +60,7 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
         (x < width - 1 && !visited[pos + 1]) ||
         (y > 0 && !visited[pos - width]) ||
         (y < height - 1 && !visited[pos + width]);
-      pixels[i + 3] = hasEdge ? 128 : 0;
+      pixels[i + 3] = hasEdge ? EDGE_FEATHER_ALPHA : KEYED_ALPHA;
     }
   }
 
@@ -107,15 +107,28 @@ const ART_STYLE_PROMPT =
   "Modern isometric 16-bit pixel art sprite, highly detailed blocky pixel art, " +
   "crisp pixel edges, rich shading and highlights, nostalgic Pokémon-style sprite";
 
+// Uniform random sample without replacement (partial Fisher–Yates).
+// `Array.sort(() => Math.random() - 0.5)` is a biased shuffle, so use this instead.
+function sampleInspirations(pool: readonly string[], count: number): string[] {
+  const copy = [...pool];
+  const n = Math.min(count, copy.length);
+  for (let i = 0; i < n; i++) {
+    const j = i + Math.floor(Math.random() * (copy.length - i));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, n);
+}
+
 export function buildCreaturePrompt(attrs: CreatureAttributes): string {
   const palette = ELEMENT_PALETTE[attrs.element] ?? "silver and grey";
   const rarityMod = RARITY_MODIFIER[attrs.rarity] ?? "common";
   const blueprint = ARCHETYPE_REGISTRY[attrs.archetype];
-  const inspirations = blueprint.commonInspirations.join(", ");
-  const trait = sanitizeTrait(attrs.trait);
+  const count = Math.random() < 0.5 ? 1 : 2;
+  const inspirations = sampleInspirations(blueprint.commonInspirations, count).join(", ");
+  const description = sanitizeDescription(attrs.description);
 
   return [
-    `${trait}`,
+    `${description}`,
     `${ART_STYLE_PROMPT},`,
     `${blueprint.name} creature,`,
     `${attrs.element} elemental with ${palette} color palette,`,
