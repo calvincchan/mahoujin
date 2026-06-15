@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { analyzeDrawing } from "@/src/lib/analyzer/gemini-adapter";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
@@ -13,5 +13,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "imageBase64 required" }, { status: 400 });
   }
   const attrs = await analyzeDrawing(imageBase64);
+  console.log(attrs);
   return NextResponse.json(attrs);
 }
