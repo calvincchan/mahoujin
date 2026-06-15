@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
 import { SYSTEM_PROMPT } from "./prompt";
-import { CreatureAttributes, CreatureAttributesSchema } from "./types";
+import { CreatureAttributes, CreatureAttributesSchema, ELEMENT_KEYS } from "./types";
 import { MYSTERIOUS_CREATURE } from "./constants";
 import { ARCHETYPE_BLUEPRINT_KEYS } from "./archetypes";
 
@@ -18,7 +18,7 @@ function parseDataUrl(imageBase64: string): { mimeType: string; data: string } {
   return { mimeType: "image/jpeg", data: imageBase64 };
 }
 
-// Keep in sync with CreatureAttributesSchema in types.ts and ARCHETYPE_BLUEPRINT_KEYS
+// Keep in sync with CreatureAttributesSchema in types.ts, ARCHETYPE_BLUEPRINT_KEYS, and ELEMENT_KEYS
 const responseSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
@@ -27,8 +27,13 @@ const responseSchema: Schema = {
       format: "enum",
       enum: [...ARCHETYPE_BLUEPRINT_KEYS],
     },
-    element: { type: SchemaType.STRING },
-    trait: { type: SchemaType.STRING },
+    element: {
+      type: SchemaType.STRING,
+      format: "enum",
+      enum: [...ELEMENT_KEYS],
+    },
+    creatureName: { type: SchemaType.STRING },
+    description: { type: SchemaType.STRING },
     stats: {
       type: SchemaType.OBJECT,
       properties: {
@@ -42,7 +47,7 @@ const responseSchema: Schema = {
     rarity: { type: SchemaType.INTEGER },
     confidence: { type: SchemaType.STRING, format: "enum", enum: ["high", "low"] },
   },
-  required: ["archetype", "element", "trait", "stats", "rarity", "confidence"],
+  required: ["archetype", "element", "creatureName", "description", "stats", "rarity", "confidence"],
 };
 
 export async function analyzeDrawing(
