@@ -101,6 +101,12 @@ const RARITY_MODIFIER: Record<number, string> = {
   5: "legendary with golden aura and mystical effects",
 };
 
+// Art direction — swap this const to experiment with different visual styles
+// (e.g. anime/chibi, watercolour) without touching the content/data path.
+const ART_STYLE_PROMPT =
+  "Modern isometric 16-bit pixel art sprite, highly detailed blocky pixel art, " +
+  "crisp pixel edges, rich shading and highlights, nostalgic Pokémon-style sprite";
+
 export function buildCreaturePrompt(attrs: CreatureAttributes): string {
   const palette = ELEMENT_PALETTE[attrs.element] ?? "silver and grey";
   const rarityMod = RARITY_MODIFIER[attrs.rarity] ?? "common";
@@ -110,14 +116,13 @@ export function buildCreaturePrompt(attrs: CreatureAttributes): string {
 
   return [
     `${trait}`,
-    `Modern isometric 16-bit pixel art sprite,`,
+    `${ART_STYLE_PROMPT},`,
     `${blueprint.name} creature,`,
     `${attrs.element} elemental with ${palette} color palette,`,
     `inspired by ${inspirations},`,
     `${rarityMod},`,
-    `highly detailed blocky pixel art, crisp pixel edges, rich shading and highlights,`,
     `intricate body markings, expressive eyes, dynamic silhouette,`,
-    `nostalgic Pokémon-style sprite, full body visible, facing left,`,
+    `full body visible, facing left,`,
     `centered on plain white background, no text, no watermark, no border`,
   ].join(" ");
 }
