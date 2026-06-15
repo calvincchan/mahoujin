@@ -22,7 +22,8 @@ const ORB_COLOR: Record<Element, [string, string]> = {
   Stellar:  ["#6d28d9", "#e0f2fe"],
 };
 
-export function getElementOrbColor(element: Element): { primary: string; secondary: string } {
-  const [primary, secondary] = ORB_COLOR[element];
+export function getElementOrbColor(element: string): { primary: string; secondary: string } {
+  const pair = ORB_COLOR[element as Element] ?? ["#a8a878", "#c8c8a0"];
+  const [primary, secondary] = pair;
   return { primary, secondary };
 }

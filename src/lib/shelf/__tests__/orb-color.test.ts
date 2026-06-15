@@ -17,6 +17,12 @@ describe("getElementOrbColor", () => {
     expect(primary).toBe("#6d28d9");
   });
 
+  it("unknown element returns Normal fallback colours", () => {
+    const { primary, secondary } = getElementOrbColor("Unknown" as never);
+    expect(primary).toBe("#a8a878");
+    expect(secondary).toBe("#c8c8a0");
+  });
+
   it("all 19 elements return non-empty hex pairs", () => {
     const elements = [
       "Normal", "Fire", "Water", "Grass", "Electric", "Ice",

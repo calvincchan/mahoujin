@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SavedCreature } from "@/src/lib/analyzer/types";
 import { getAll, deleteCreature } from "@/src/lib/storage/crystal-storage";
@@ -77,13 +77,16 @@ function DetailOverlay({
   const { floatClass, glowStyle, glowColor } = useCreatureAnimation(creature.element);
   const fallback = ELEMENT_FALLBACK[creature.element] ?? "✨";
 
-  // Pre-compute scatter for release burst
-  const particles = Array.from({ length: RELEASE_PARTICLE_COUNT }, (_, i) => ({
-    id: i,
-    left: 50 + (Math.random() - 0.5) * 60,
-    dx: `${(Math.random() - 0.5) * 120}px`,
-    delay: Math.random() * 0.2,
-  }));
+  const particles = useMemo(
+    () =>
+      Array.from({ length: RELEASE_PARTICLE_COUNT }, (_, i) => ({
+        id: i,
+        left: 50 + (Math.random() - 0.5) * 60,
+        dx: `${(Math.random() - 0.5) * 120}px`,
+        delay: Math.random() * 0.2,
+      })),
+    []
+  );
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-zinc-950 text-amber-50 overflow-y-auto">
