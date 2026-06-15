@@ -3,3 +3,59 @@
 :root {
   --color-theme: #d4a832;
 }
+
+/* AnimationEngine keyframes — consumed by useCreatureAnimation + SummoningScreen. */
+
+/* Perpetual idle float loop. */
+@keyframes creature-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+.creature-float {
+  animation: creature-float 3.6s ease-in-out infinite;
+}
+
+/* Element-coloured glow pulse — colour supplied via --glow-color. */
+@keyframes creature-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px var(--glow-color)); }
+  50%      { filter: drop-shadow(0 0 22px var(--glow-color)); }
+}
+
+/* Entrance: burst of light expanding outward as the creature reveals. */
+@keyframes summon-burst {
+  0%   { transform: scale(0.2); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.summon-burst {
+  animation: summon-burst 1s ease-out forwards;
+}
+
+/* Entrance: creature rises and settles into view. */
+@keyframes summon-reveal {
+  0%   { transform: scale(0.4) translateY(20px); opacity: 0; }
+  60%  { transform: scale(1.08) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.summon-reveal {
+  animation: summon-reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Entrance: particles drifting up and fading. */
+@keyframes summon-particle {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-90px) scale(0.3); opacity: 0; }
+}
+
+.summon-particle {
+  animation: summon-particle 1.4s ease-out forwards;
+}
+
+/* Stat bar fill grow-in. */
+@keyframes stat-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
