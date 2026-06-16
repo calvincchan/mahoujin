@@ -2,7 +2,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { buildCreaturePrompt, jpegToTransparentPng } from "../gemini-image-adapter";
 import { ARCHETYPE_REGISTRY } from "../../analyzer/archetypes";
 import type { CreatureAttributes } from "../../analyzer/types";
-import sharp from "sharp";
+import * as jpeg from "jpeg-js";
+import { PNG } from "pngjs";
 
 const BASE_ATTRS: CreatureAttributes = {
   archetype: "fox",
@@ -78,27 +79,32 @@ describe("buildCreaturePrompt", () => {
 });
 
 describe("jpegToTransparentPng", () => {
-  async function makeTestJpeg(pixels: { r: number; g: number; b: number }[][], w: number, h: number): Promise<string> {
-    const raw = Buffer.alloc(w * h * 3);
+  function makeTestJpeg(pixels: { r: number; g: number; b: number }[][], w: number, h: number): string {
+    const rgba = Buffer.alloc(w * h * 4);
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 3;
-        raw[i] = pixels[y][x].r;
-        raw[i + 1] = pixels[y][x].g;
-        raw[i + 2] = pixels[y][x].b;
+        const i = (y * w + x) * 4;
+        rgba[i]     = pixels[y][x].r;
+        rgba[i + 1] = pixels[y][x].g;
+        rgba[i + 2] = pixels[y][x].b;
+        rgba[i + 3] = 255;
       }
     }
-    const jpeg = await sharp(raw, { raw: { width: w, height: h, channels: 3 } }).jpeg({ quality: 100 }).toBuffer();
-    return jpeg.toString("base64");
+    const encoded = jpeg.encode({ data: rgba, width: w, height: h }, 100);
+    return encoded.data.toString("base64");
+  }
+
+  function decodePng(pngBase64: string): Buffer {
+    return PNG.sync.read(Buffer.from(pngBase64, "base64")).data as unknown as Buffer;
   }
 
   it("makes border-connected near-white pixels transparent", async () => {
     // 3x3: all white
     const white = { r: 255, g: 255, b: 255 };
     const pixels = [[white, white, white], [white, white, white], [white, white, white]];
-    const jpeg = await makeTestJpeg(pixels, 3, 3);
-    const pngBase64 = await jpegToTransparentPng(jpeg);
-    const { data } = await sharp(Buffer.from(pngBase64, "base64")).raw().ensureAlpha().toBuffer({ resolveWithObject: true });
+    const jpegB64 = makeTestJpeg(pixels, 3, 3);
+    const pngBase64 = await jpegToTransparentPng(jpegB64);
+    const data = decodePng(pngBase64);
     // corners should be transparent (alpha 0)
     expect(data[3]).toBe(0);
   });
@@ -112,9 +118,9 @@ describe("jpegToTransparentPng", () => {
       [white, red,   white],
       [white, white, white],
     ];
-    const jpeg = await makeTestJpeg(pixels, 3, 3);
-    const pngBase64 = await jpegToTransparentPng(jpeg);
-    const { data } = await sharp(Buffer.from(pngBase64, "base64")).raw().ensureAlpha().toBuffer({ resolveWithObject: true });
+    const jpegB64 = makeTestJpeg(pixels, 3, 3);
+    const pngBase64 = await jpegToTransparentPng(jpegB64);
+    const data = decodePng(pngBase64);
     // centre pixel (1,1) should be opaque
     const centreAlpha = data[(1 * 3 + 1) * 4 + 3];
     expect(centreAlpha).toBeGreaterThan(0);

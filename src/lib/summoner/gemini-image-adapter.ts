@@ -1,4 +1,5 @@
-import sharp from "sharp";
+import * as jpeg from "jpeg-js";
+import { PNG } from "pngjs";
 import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
 import { CreatureAttributes } from "../analyzer/types";
 
@@ -16,13 +17,11 @@ const KEYED_ALPHA = 0;
 // become transparent. Interior white highlights (eyes, teeth, frost) are preserved.
 export async function jpegToTransparentPng(jpegBase64: string): Promise<string> {
   const buf = Buffer.from(jpegBase64, "base64");
-  const { data, info } = await sharp(buf)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const { width, height } = info;
-  const pixels = new Uint8ClampedArray(data);
+  const raw = jpeg.decode(buf, { useTArray: true });
+  const { width, height } = raw;
+  // jpeg-js gives RGBA (4 channels); use directly but ensure alpha=255
+  const pixels = new Uint8ClampedArray(raw.data);
+  for (let i = 3; i < pixels.length; i += 4) pixels[i] = 255;
   const visited = new Uint8Array(width * height);
 
   function isNearWhite(idx: number): boolean {
@@ -64,11 +63,17 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
     }
   }
 
-  const png = await sharp(Buffer.from(pixels), {
-    raw: { width, height, channels: 4 },
-  }).png().toBuffer();
+  const png = new PNG({ width, height });
+  png.data = Buffer.from(pixels);
+  const pngBuf = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    png.pack()
+      .on("data", (c: Buffer) => chunks.push(c))
+      .on("end", () => resolve(Buffer.concat(chunks)))
+      .on("error", reject);
+  });
 
-  return png.toString("base64");
+  return pngBuf.toString("base64");
 }
 
 const ELEMENT_PALETTE: Record<string, string> = {
