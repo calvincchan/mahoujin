@@ -99,11 +99,11 @@ const ELEMENT_PALETTE: Record<string, string> = {
 };
 
 const RARITY_MODIFIER: Record<number, string> = {
-  1: "plain, simple",
-  2: "common",
-  3: "uncommon with subtle markings",
-  4: "rare with glowing accents",
-  5: "legendary with golden aura and mystical effects",
+  1: "plain, simple form",
+  2: "common, unremarkable",
+  3: "uncommon with subtle elemental markings",
+  4: "rare, intricate patterns and glowing accents",
+  5: "legendary, extraordinarily detailed with ancient runes and complex markings",
 };
 
 // Art direction — swap this const to experiment with different visual styles
@@ -134,15 +134,12 @@ export function buildCreaturePrompt(attrs: CreatureAttributes): string {
   const description = sanitizeDescription(attrs.description);
 
   return [
-    `${description}`,
-    `${ART_STYLE_PROMPT},`,
-    `${blueprint.name} creature,`,
-    `${attrs.element} elemental with ${palette} color palette,`,
-    `inspired by ${inspirations},`,
-    `${rarityMod},`,
-    `intricate body markings, expressive eyes, dynamic silhouette,`,
-    `full body visible, facing left,`,
-    `centered on plain white background, no text, no watermark, no border, no outer glow, no bloom, no aura`,
+    description,
+    `${palette} color palette.`,
+    `${rarityMod}.`,
+    `Inspired by ${inspirations}.`,
+    `Full body visible, facing left, centered on plain white background, no text, no watermark, no border.`,
+    ART_STYLE_PROMPT,
   ].join(" ");
 }
 

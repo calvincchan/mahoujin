@@ -13,7 +13,8 @@ Normal | Fire | Water | Grass | Electric | Ice | Fighting | Poison |
 Ground | Flying | Psychic | Bug | Rock | Ghost | Dragon | Dark |
 Steel | Fairy | Stellar
 
-Stellar is rare and prismatic — use it only for multi-elemental or cosmically themed creatures.
+When in doubt, pick the most visually dominant colour or shape cue: red/orange → Fire, blue → Water, green → Grass, yellow → Electric, white/pale blue → Ice, purple → Poison or Psychic, brown/tan → Ground or Rock, etc.
+Stellar is extremely rare — only use it when the drawing explicitly depicts stars, galaxies, cosmic imagery, or multiple elements simultaneously. Never pick Stellar just because a drawing is abstract or unclear.
 `.trim();
 
 export const ARCHETYPE_LIST = `
@@ -21,7 +22,8 @@ Valid archetypes — you MUST pick exactly one from this list:
 caterpillar | fox | rodent | bat | canine | bear | butterfly | spider |
 regional-bird | serpent | turtle | magnet | weapon | mimic | yokai | domestic-cat | mysterious
 
-Use "mysterious" when the circle is ambiguous or the creature doesn't fit any other category.
+Always try to match a concrete archetype first. Use shape cues: round body → rodent or bear; pointy ears + tail → fox or canine; wings → butterfly, bat, or regional-bird; long body → serpent; shell → turtle; geometric → magnet or weapon; fangs/cloak → yokai; etc.
+Only use "mysterious" when absolutely no other archetype fits at all.
 Do NOT invent new archetype names.
 `.trim();
 
