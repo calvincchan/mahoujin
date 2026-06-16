@@ -18,6 +18,11 @@ export function useCameraStream(): CameraHandle {
   useEffect(() => {
     let active = true;
 
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("Camera unavailable — page must be served over HTTPS.");
+      return;
+    }
+
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then((stream) => {
