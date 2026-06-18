@@ -1,36 +1,42 @@
 import { describe, it, expect } from "vitest";
-import { getElementOrbColor } from "../orb-color";
+import { getPowerOrbColor } from "../orb-color";
 
-describe("getElementOrbColor", () => {
-  it("Fire returns crimson primary", () => {
-    const { primary } = getElementOrbColor("Fire");
+describe("getPowerOrbColor", () => {
+  it("fire returns crimson primary", () => {
+    const { primary } = getPowerOrbColor(["fire"]);
     expect(primary).toBe("#dc2626");
   });
 
-  it("Water returns cyan-blue primary", () => {
-    const { primary } = getElementOrbColor("Water");
+  it("water returns cyan-blue primary", () => {
+    const { primary } = getPowerOrbColor(["water"]);
     expect(primary).toBe("#0284c7");
   });
 
-  it("Stellar returns prismatic violet primary", () => {
-    const { primary } = getElementOrbColor("Stellar");
+  it("mystery returns prismatic violet primary", () => {
+    const { primary } = getPowerOrbColor(["mystery"]);
     expect(primary).toBe("#6d28d9");
   });
 
-  it("unknown element returns Normal fallback colours", () => {
-    const { primary, secondary } = getElementOrbColor("Unknown" as never);
+  it("unknown power returns Normal fallback colours", () => {
+    const { primary, secondary } = getPowerOrbColor(["unknownpower"]);
     expect(primary).toBe("#a8a878");
     expect(secondary).toBe("#c8c8a0");
   });
 
-  it("all 19 elements return non-empty hex pairs", () => {
-    const elements = [
-      "Normal", "Fire", "Water", "Grass", "Electric", "Ice",
-      "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
-      "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy", "Stellar",
-    ] as const;
-    for (const el of elements) {
-      const { primary, secondary } = getElementOrbColor(el);
+  it("uses the first power (dominant) from the array", () => {
+    const { primary } = getPowerOrbColor(["fire", "water", "ice"]);
+    expect(primary).toBe("#dc2626");
+  });
+
+  it("empty array falls back to mystery palette", () => {
+    const { primary } = getPowerOrbColor([]);
+    expect(primary).toBe("#6d28d9");
+  });
+
+  it("returns non-empty hex pairs for common powers", () => {
+    const powers = ["fire", "water", "lightning", "ice", "shadow", "light", "wind", "nature", "earth", "mystery", "ghost", "psychic", "poison", "rock"];
+    for (const p of powers) {
+      const { primary, secondary } = getPowerOrbColor([p]);
       expect(primary).toMatch(/^#[0-9a-f]{6}$/i);
       expect(secondary).toMatch(/^#[0-9a-f]{6}$/i);
     }

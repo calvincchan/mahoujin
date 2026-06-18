@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { CreatureAttributesSchema, ELEMENT_KEYS } from "../types";
+import { CreatureAttributesSchema } from "../types";
 
 const VALID = {
-  archetype: "fox",
-  element: "Fire",
-  creatureName: "Emberfang",
-  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
-  stats: { hp: 80, mp: 60, atk: 90, def: 70 },
-  rarity: 3,
+  creature_archetype: "fox",
+  creature_name: "Emberfang",
+  complexity: 60,
+  powers: ["fire", "shadow"],
+  summary_description: "A lithe fox with flame-tipped tails wreathed in shadow.",
   confidence: "high",
 };
 
@@ -16,82 +15,85 @@ describe("CreatureAttributesSchema", () => {
     expect(() => CreatureAttributesSchema.parse(VALID)).not.toThrow();
   });
 
-  it("rejects unknown element", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, element: "Lightning" })
-    ).toThrow();
+  it("accepts single-power payload", () => {
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, powers: ["fire"] })).not.toThrow();
   });
 
-  it("accepts all 19 valid elements", () => {
-    for (const el of ELEMENT_KEYS) {
-      expect(() =>
-        CreatureAttributesSchema.parse({ ...VALID, element: el })
-      ).not.toThrow();
-    }
+  it("accepts 8-power payload", () => {
+    const powers = ["fire", "fire", "fire", "water", "water", "ice", "lightning", "shadow"];
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, powers })).not.toThrow();
   });
 
-  it("rejects unknown archetype", () => {
+  it("accepts powers with duplicate entries (dominance)", () => {
     expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, archetype: "dragon" })
-    ).toThrow();
-  });
-
-  it("accepts mysterious archetype", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, archetype: "mysterious" })
+      CreatureAttributesSchema.parse({ ...VALID, powers: ["fire", "fire", "fire", "water"] })
     ).not.toThrow();
   });
 
-  it("rejects invalid confidence enum", () => {
+  it("rejects empty powers array", () => {
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, powers: [] })).toThrow();
+  });
+
+  it("rejects powers array with more than 8 entries", () => {
+    const powers = ["a", "b", "c", "d", "e", "f", "g", "h", "i"];
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, powers })).toThrow();
+  });
+
+  it("rejects complexity below 0", () => {
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, complexity: -1 })).toThrow();
+  });
+
+  it("rejects complexity above 100", () => {
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, complexity: 101 })).toThrow();
+  });
+
+  it("rejects non-integer complexity", () => {
+    expect(() => CreatureAttributesSchema.parse({ ...VALID, complexity: 60.5 })).toThrow();
+  });
+
+  it("rejects invalid confidence value", () => {
     expect(() =>
       CreatureAttributesSchema.parse({ ...VALID, confidence: "medium" })
     ).toThrow();
   });
 
-  it("rejects rarity 0", () => {
+  it("accepts confidence: low", () => {
     expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, rarity: 0 })
-    ).toThrow();
+      CreatureAttributesSchema.parse({ ...VALID, confidence: "low" })
+    ).not.toThrow();
   });
 
-  it("rejects rarity 6", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, rarity: 6 })
-    ).toThrow();
+  it("rejects missing powers field", () => {
+    const { powers: _powers, ...without } = VALID;
+    expect(() => CreatureAttributesSchema.parse(without)).toThrow();
   });
 
-  it("rejects missing stats field", () => {
-    const { hp: _hp, ...statsWithoutHp } = VALID.stats;
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, stats: statsWithoutHp })
-    ).toThrow();
+  it("rejects missing creature_archetype", () => {
+    const { creature_archetype: _a, ...without } = VALID;
+    expect(() => CreatureAttributesSchema.parse(without)).toThrow();
   });
 
-  it("rejects stat value out of range (0)", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, stats: { ...VALID.stats, hp: 0 } })
-    ).toThrow();
+  it("rejects missing creature_name", () => {
+    const { creature_name: _n, ...without } = VALID;
+    expect(() => CreatureAttributesSchema.parse(without)).toThrow();
   });
 
-  it("rejects stat value out of range (101)", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, stats: { ...VALID.stats, atk: 101 } })
-    ).toThrow();
+  it("rejects missing summary_description", () => {
+    const { summary_description: _d, ...without } = VALID;
+    expect(() => CreatureAttributesSchema.parse(without)).toThrow();
   });
+});
 
-  it("rejects non-integer stat", () => {
-    expect(() =>
-      CreatureAttributesSchema.parse({ ...VALID, stats: { ...VALID.stats, mp: 60.5 } })
-    ).toThrow();
-  });
+describe("rarity derivation (Math.max(1, Math.ceil(complexity / 20)))", () => {
+  const rarity = (complexity: number) => Math.max(1, Math.ceil(complexity / 20));
 
-  it("rejects missing top-level field (description)", () => {
-    const { description: _description, ...withoutDescription } = VALID;
-    expect(() => CreatureAttributesSchema.parse(withoutDescription)).toThrow();
-  });
-
-  it("rejects missing top-level field (creatureName)", () => {
-    const { creatureName: _creatureName, ...withoutCreatureName } = VALID;
-    expect(() => CreatureAttributesSchema.parse(withoutCreatureName)).toThrow();
-  });
+  it("complexity 0 → rarity 1", () => expect(rarity(0)).toBe(1));
+  it("complexity 1 → rarity 1", () => expect(rarity(1)).toBe(1));
+  it("complexity 20 → rarity 1", () => expect(rarity(20)).toBe(1));
+  it("complexity 21 → rarity 2", () => expect(rarity(21)).toBe(2));
+  it("complexity 40 → rarity 2", () => expect(rarity(40)).toBe(2));
+  it("complexity 41 → rarity 3", () => expect(rarity(41)).toBe(3));
+  it("complexity 80 → rarity 4", () => expect(rarity(80)).toBe(4));
+  it("complexity 81 → rarity 5", () => expect(rarity(81)).toBe(5));
+  it("complexity 100 → rarity 5", () => expect(rarity(100)).toBe(5));
 });

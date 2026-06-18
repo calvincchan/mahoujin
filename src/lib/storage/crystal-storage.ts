@@ -1,5 +1,4 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
 import type { CreatureAttributes, SavedCreature } from "../analyzer/types";
 
 const DB_NAME = "mahoujin";
@@ -28,15 +27,6 @@ function getDB(): Promise<IDBPDatabase<MahoujinDB>> {
   return dbPromise;
 }
 
-/**
- * Persist a kept creature to the Crystal Shelf. Derives `id`, `category`
- * (denormalized from the Archetype Registry) and `capturedAt` at save time.
- *
- * @param attrs   The creature's attributes from the summon pipeline.
- * @param name    The player's final name (defaults to `attrs.creatureName`).
- * @param imageUrl The rendered sprite as a data URL.
- * @returns The fully-formed SavedCreature that was persisted.
- */
 export async function saveCreature(
   attrs: CreatureAttributes,
   name: string,
@@ -45,8 +35,7 @@ export async function saveCreature(
   const creature: SavedCreature = {
     ...attrs,
     id: crypto.randomUUID(),
-    name: name.trim() || attrs.creatureName,
-    category: ARCHETYPE_REGISTRY[attrs.archetype].category,
+    name: name.trim() || attrs.creature_name,
     imageUrl,
     capturedAt: new Date().toISOString(),
   };

@@ -1,80 +1,60 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { buildCreaturePrompt, jpegToTransparentPng } from "../gemini-image-adapter";
-import { ARCHETYPE_REGISTRY } from "../../analyzer/archetypes";
 import type { CreatureAttributes } from "../../analyzer/types";
 import * as jpeg from "jpeg-js";
 import { PNG } from "pngjs";
 
 const BASE_ATTRS: CreatureAttributes = {
-  archetype: "fox",
-  element: "Fire",
-  creatureName: "Emberfang",
-  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
-  stats: { hp: 70, mp: 60, atk: 80, def: 50 },
-  rarity: 3,
+  creature_archetype: "fox",
+  creature_name: "Emberfang",
+  complexity: 60,
+  powers: ["fire", "shadow"],
+  summary_description: "A lithe fox with flame-tipped tails wreathed in shadow.",
   confidence: "high",
 };
 
 describe("buildCreaturePrompt", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("includes at least one blueprint commonInspiration for the archetype", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
+  it("includes the summary_description at the start of the prompt", () => {
     const prompt = buildCreaturePrompt(BASE_ATTRS);
-    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
-    const found = inspirations.some((name) => prompt.includes(name));
-    expect(found).toBe(true);
+    expect(prompt).toContain(BASE_ATTRS.summary_description);
   });
 
-  it("samples exactly one inspiration when count resolves to 1", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0); // count = (0 < 0.5) -> 1
+  it("includes the creature_archetype in the prompt", () => {
     const prompt = buildCreaturePrompt(BASE_ATTRS);
-    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
-    const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
-    expect(matchCount).toBe(1);
+    expect(prompt).toContain("fox creature");
   });
 
-  it("samples exactly two inspirations when count resolves to 2", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0.9); // count = (0.9 < 0.5) -> 2
+  it("derives colour palette from the dominant power (powers[0])", () => {
     const prompt = buildCreaturePrompt(BASE_ATTRS);
-    const inspirations = ARCHETYPE_REGISTRY["fox"].commonInspirations;
-    const matchCount = inspirations.filter((name) => prompt.includes(name)).length;
-    expect(matchCount).toBe(2);
+    expect(prompt).toContain("crimson and orange");
   });
 
-  it("includes the sanitized description at the start of the prompt", () => {
-    const prompt = buildCreaturePrompt(BASE_ATTRS);
-    expect(prompt).toContain(BASE_ATTRS.description);
-  });
-
-  it("includes the blueprint name, not the raw archetype key", () => {
-    const prompt = buildCreaturePrompt(BASE_ATTRS);
-    expect(prompt).toContain("Fox creature");
-  });
-
-  it("works for the mysterious archetype with its own inspirations", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0);
-    const attrs: CreatureAttributes = { ...BASE_ATTRS, archetype: "mysterious", element: "Stellar" };
+  it("uses water palette when dominant power is water", () => {
+    const attrs = { ...BASE_ATTRS, powers: ["water", "ice"] };
     const prompt = buildCreaturePrompt(attrs);
-    const inspirations = ARCHETYPE_REGISTRY["mysterious"].commonInspirations;
-    const found = inspirations.some((name) => prompt.includes(name));
-    expect(found).toBe(true);
+    expect(prompt).toContain("cyan and deep blue");
   });
 
-  it("caps an over-length description at ~900 chars", () => {
-    const longDescription = "x".repeat(1100);
-    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, description: longDescription });
-    expect(prompt).toContain("x".repeat(900));
-    expect(prompt).not.toContain("x".repeat(901));
+  it("derives rarity modifier from complexity", () => {
+    // complexity 60 → rarity 3 → "uncommon with subtle elemental markings"
+    const prompt = buildCreaturePrompt(BASE_ATTRS);
+    expect(prompt).toContain("uncommon with subtle elemental markings");
   });
 
-  it("strips newlines from description before placing it in the prompt", () => {
-    const descriptionWithNewlines = "A fox\nwith bright\r\nflames.";
-    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, description: descriptionWithNewlines });
-    expect(prompt).not.toMatch(/[\r\n]/);
-    expect(prompt).toContain("A fox");
+  it("complexity 100 → rarity 5 → legendary modifier", () => {
+    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, complexity: 100 });
+    expect(prompt).toContain("legendary");
+  });
+
+  it("complexity 0 → rarity 1 → plain modifier", () => {
+    const prompt = buildCreaturePrompt({ ...BASE_ATTRS, complexity: 0 });
+    expect(prompt).toContain("plain, simple form");
+  });
+
+  it("falls back to mystery palette for unknown power", () => {
+    const attrs = { ...BASE_ATTRS, powers: ["unknownpower"] };
+    const prompt = buildCreaturePrompt(attrs);
+    expect(prompt).toContain("silver and grey");
   });
 });
 

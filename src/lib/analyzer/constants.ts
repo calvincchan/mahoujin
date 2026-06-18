@@ -1,11 +1,10 @@
 import type { CreatureAttributes } from "./types";
 
-export const MYSTERIOUS_CREATURE: CreatureAttributes = {
-  archetype: "mysterious",
-  element: "Stellar",
-  creatureName: "???",
-  description: "A stellar entity of unknown origin, shimmering with cosmic energy and starlight. Its form shifts between states — sometimes solid, sometimes translucent — as though existing in multiple dimensions at once.",
-  stats: { hp: 85, mp: 90, atk: 75, def: 80 },
-  rarity: 5,
+export const UNKNOWN_CREATURE: CreatureAttributes = {
+  creature_archetype: "unknown",
+  creature_name: "Mysterious One",
+  complexity: 0,
+  powers: ["mystery"],
+  summary_description: "An enigmatic creature of unknown origin, shrouded in swirling unknown energies.",
   confidence: "low",
 };

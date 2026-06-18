@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
 import { SYSTEM_PROMPT } from "./prompt";
-import { CreatureAttributes, CreatureAttributesSchema, ELEMENT_KEYS } from "./types";
-import { MYSTERIOUS_CREATURE } from "./constants";
-import { ARCHETYPE_BLUEPRINT_KEYS } from "./archetypes";
+import { CreatureAttributes, CreatureAttributesSchema } from "./types";
+import { UNKNOWN_CREATURE } from "./constants";
 
 let _genAI: GoogleGenerativeAI | null = null;
 function getGenAI(): GoogleGenerativeAI {
@@ -18,36 +17,21 @@ function parseDataUrl(imageBase64: string): { mimeType: string; data: string } {
   return { mimeType: "image/jpeg", data: imageBase64 };
 }
 
-// Keep in sync with CreatureAttributesSchema in types.ts, ARCHETYPE_BLUEPRINT_KEYS, and ELEMENT_KEYS
+// Keep in sync with CreatureAttributesSchema in types.ts
 const responseSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
-    archetype: {
-      type: SchemaType.STRING,
-      format: "enum",
-      enum: [...ARCHETYPE_BLUEPRINT_KEYS],
+    creature_archetype: { type: SchemaType.STRING },
+    creature_name: { type: SchemaType.STRING },
+    complexity: { type: SchemaType.INTEGER },
+    powers: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
     },
-    element: {
-      type: SchemaType.STRING,
-      format: "enum",
-      enum: [...ELEMENT_KEYS],
-    },
-    creatureName: { type: SchemaType.STRING },
-    description: { type: SchemaType.STRING },
-    stats: {
-      type: SchemaType.OBJECT,
-      properties: {
-        hp: { type: SchemaType.INTEGER },
-        mp: { type: SchemaType.INTEGER },
-        atk: { type: SchemaType.INTEGER },
-        def: { type: SchemaType.INTEGER },
-      },
-      required: ["hp", "mp", "atk", "def"],
-    },
-    rarity: { type: SchemaType.INTEGER },
+    summary_description: { type: SchemaType.STRING },
     confidence: { type: SchemaType.STRING, format: "enum", enum: ["high", "low"] },
   },
-  required: ["archetype", "element", "creatureName", "description", "stats", "rarity", "confidence"],
+  required: ["creature_archetype", "creature_name", "complexity", "powers", "summary_description", "confidence"],
 };
 
 export async function analyzeDrawing(
@@ -76,14 +60,11 @@ export async function analyzeDrawing(
     const attrs = CreatureAttributesSchema.parse(parsed);
 
     if (attrs.confidence === "low") {
-      return {
-        ...MYSTERIOUS_CREATURE,
-        rarity: Math.random() < 0.5 ? 4 : 5,
-      };
+      return UNKNOWN_CREATURE;
     }
 
     return attrs;
   } catch {
-    return MYSTERIOUS_CREATURE;
+    return UNKNOWN_CREATURE;
   }
 }
