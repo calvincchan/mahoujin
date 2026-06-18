@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
+import { UNKNOWN_CREATURE } from "./constants";
 import { SYSTEM_PROMPT } from "./prompt";
 import { CreatureAttributes, CreatureAttributesSchema } from "./types";
-import { UNKNOWN_CREATURE } from "./constants";
 
 let _genAI: GoogleGenerativeAI | null = null;
 function getGenAI(): GoogleGenerativeAI {
@@ -39,7 +39,7 @@ export async function analyzeDrawing(
 ): Promise<CreatureAttributes> {
   try {
     const model = getGenAI().getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash-lite",
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         responseMimeType: "application/json",
