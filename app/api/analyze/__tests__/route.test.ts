@@ -12,12 +12,21 @@ vi.mock("@/src/lib/analyzer/gemini-adapter", () => ({
 import { POST } from "../route";
 
 const ATTRS = {
-  archetype: "dragon",
-  element: "fire",
-  trait: "fierce",
-  stats: { hp: 80, mp: 60, atk: 90, def: 70 },
-  rarity: 3,
+  creature_archetype: "fox",
+  creature_name: "Emberfang",
+  complexity: 60,
+  powers: ["fire", "shadow"],
+  summary_description: "A lithe fox with flame-tipped tails wreathed in shadow.",
   confidence: "high",
+};
+
+const UNKNOWN = {
+  creature_archetype: "unknown",
+  creature_name: "Mysterious One",
+  complexity: 0,
+  powers: ["mystery"],
+  summary_description: "An enigmatic creature of unknown origin, shrouded in swirling unknown energies.",
+  confidence: "low",
 };
 
 function makeReq(body: unknown) {
@@ -64,18 +73,10 @@ describe("POST /api/analyze", () => {
     expect(await res.json()).toEqual({ error: "imageBase64 required" });
   });
 
-  it("returns analyzeDrawing result even when it falls back to mysterious", async () => {
-    const mysterious = {
-      archetype: "mysterious",
-      element: "void",
-      trait: "enigmatic",
-      stats: { hp: 85, mp: 90, atk: 75, def: 80 },
-      rarity: 5,
-      confidence: "low",
-    };
-    mockAnalyzeDrawing.mockResolvedValue(mysterious);
+  it("returns UNKNOWN_CREATURE when analyzeDrawing falls back (confidence low)", async () => {
+    mockAnalyzeDrawing.mockResolvedValue(UNKNOWN);
     const res = await POST(makeReq({ imageBase64: "abc" }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual(mysterious);
+    expect(await res.json()).toEqual(UNKNOWN);
   });
 });

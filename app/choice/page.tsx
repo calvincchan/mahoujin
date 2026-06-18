@@ -9,13 +9,6 @@ import {
 import { useCreatureAnimation } from "@/src/lib/summoner/useCreatureAnimation";
 import { saveCreature } from "@/src/lib/storage/crystal-storage";
 
-const ELEMENT_FALLBACK: Record<string, string> = {
-  Normal: "⭐", Fire: "🔥", Water: "💧", Grass: "🌿", Electric: "⚡",
-  Ice: "❄️", Fighting: "🥊", Poison: "☠️", Ground: "🏔️", Flying: "🌬️",
-  Psychic: "🔮", Bug: "🐛", Rock: "🪨", Ghost: "👻", Dragon: "🐉",
-  Dark: "🌑", Steel: "⚙️", Fairy: "🧚", Stellar: "✨",
-};
-
 const RELEASE_PARTICLES = 16;
 const RELEASE_DURATION_MS = 1100;
 
@@ -42,14 +35,13 @@ export default function ChoicePage() {
       return;
     }
     setAttrs(parsed.data);
-    setName(parsed.data.creatureName);
+    setName(parsed.data.creature_name);
     setSprite(sessionStorage.getItem("mahoujin_sprite"));
     setStatus("ready");
   }, []);
 
-  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(
-    attrs?.element ?? "Normal"
-  );
+  const dominantPower = attrs?.powers[0] ?? "mystery";
+  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(dominantPower);
 
   // Pre-computed scatter offsets for the release burst.
   const releaseParticles = useMemo(
@@ -80,7 +72,6 @@ export default function ChoicePage() {
     window.setTimeout(() => router.push("/"), RELEASE_DURATION_MS);
   }
 
-  const fallbackEmoji = attrs ? ELEMENT_FALLBACK[attrs.element] ?? "✨" : "✨";
   const releasing = phase === "releasing";
 
   if (status === "error") {
@@ -104,9 +95,9 @@ export default function ChoicePage() {
       {status === "ready" && attrs && (
         <>
           <h1 className="text-xl font-bold mb-1 tracking-wide text-center">
-            {attrs.creatureName}
+            {attrs.creature_name}
           </h1>
-          <p className="capitalize text-zinc-500 text-sm mb-6">{attrs.archetype}</p>
+          <p className="capitalize text-zinc-500 text-sm mb-6">{attrs.creature_archetype}</p>
 
           {/* Creature — smaller than the summon reveal, still animated. */}
           <div className="relative w-44 h-44 mb-8 flex items-center justify-center">
@@ -133,12 +124,12 @@ export default function ChoicePage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={sprite}
-                  alt={attrs.creatureName}
+                  alt={attrs.creature_name}
                   className="w-40 h-40 object-contain"
                 />
               ) : (
                 <div className="text-7xl" aria-hidden>
-                  {fallbackEmoji}
+                  ✨
                 </div>
               )}
             </div>

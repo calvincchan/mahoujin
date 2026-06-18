@@ -4,23 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SavedCreature } from "@/src/lib/analyzer/types";
 import { getAll, deleteCreature } from "@/src/lib/storage/crystal-storage";
-import { getElementOrbColor } from "@/src/lib/shelf/orb-color";
+import { getPowerOrbColor } from "@/src/lib/shelf/orb-color";
 import { CreatureStatsCard } from "@/components/CreatureStatsCard";
 import { useCreatureAnimation } from "@/src/lib/summoner/useCreatureAnimation";
-
-const ELEMENT_FALLBACK: Record<string, string> = {
-  Normal: "⭐", Fire: "🔥", Water: "💧", Grass: "🌿", Electric: "⚡",
-  Ice: "❄️", Fighting: "🥊", Poison: "☠️", Ground: "🏔️", Flying: "🌬️",
-  Psychic: "🔮", Bug: "🐛", Rock: "🪨", Ghost: "👻", Dragon: "🐉",
-  Dark: "🌑", Steel: "⚙️", Fairy: "🧚", Stellar: "✨",
-};
 
 const MIN_SLOTS = 9;
 const RELEASE_PARTICLE_COUNT = 14;
 
 function OrbSlot({ creature, onClick }: { creature: SavedCreature; onClick: () => void }) {
-  const { primary, secondary } = getElementOrbColor(creature.element);
-  const fallback = ELEMENT_FALLBACK[creature.element] ?? "✨";
+  const { primary, secondary } = getPowerOrbColor(creature.powers);
 
   return (
     <button
@@ -40,7 +32,7 @@ function OrbSlot({ creature, onClick }: { creature: SavedCreature; onClick: () =
           className="w-4/5 h-4/5 object-contain drop-shadow-lg"
         />
       ) : (
-        <span className="text-3xl" aria-hidden>{fallback}</span>
+        <span className="text-3xl" aria-hidden>✨</span>
       )}
       {/* Inner highlight shimmer */}
       <span
@@ -74,8 +66,8 @@ function DetailOverlay({
   onRelease: (id: string) => Promise<void>;
   releasing: boolean;
 }) {
-  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(creature.element);
-  const fallback = ELEMENT_FALLBACK[creature.element] ?? "✨";
+  const dominantPower = creature.powers[0] ?? "mystery";
+  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(dominantPower);
 
   const particles = useMemo(
     () =>
@@ -99,14 +91,11 @@ function DetailOverlay({
         >
           ← Back
         </button>
-        <span className="text-xs uppercase tracking-widest text-zinc-500 font-mono capitalize">
-          {creature.category}
-        </span>
       </div>
 
       <div className="flex flex-col items-center px-4 pt-6 pb-10 gap-6">
         <h1 className="text-2xl font-bold tracking-wide text-center">{creature.name}</h1>
-        <p className="capitalize text-zinc-500 text-sm -mt-4">{creature.archetype}</p>
+        <p className="capitalize text-zinc-500 text-sm -mt-4">{creature.creature_archetype}</p>
 
         {/* Creature sprite */}
         <div className="relative w-52 h-52 flex items-center justify-center">
@@ -136,7 +125,7 @@ function DetailOverlay({
                 className="w-48 h-48 object-contain"
               />
             ) : (
-              <div className="text-7xl" aria-hidden>{fallback}</div>
+              <div className="text-7xl" aria-hidden>✨</div>
             )}
           </div>
         </div>

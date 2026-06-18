@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MYSTERIOUS_CREATURE } from "@/src/lib/analyzer/constants";
+import { UNKNOWN_CREATURE } from "@/src/lib/analyzer/constants";
 
 const FLAVOUR_TEXTS = [
   "Reading the magic circle…",
@@ -45,7 +45,7 @@ export default function AnalysisPage() {
         const attrs = await res.json();
         sessionStorage.setItem("mahoujin_attrs", JSON.stringify(attrs));
       } catch {
-        sessionStorage.setItem("mahoujin_attrs", JSON.stringify(MYSTERIOUS_CREATURE));
+        sessionStorage.setItem("mahoujin_attrs", JSON.stringify(UNKNOWN_CREATURE));
       }
 
       router.replace("/summoning");

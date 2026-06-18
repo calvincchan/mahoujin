@@ -10,19 +10,19 @@ vi.mock("@google/generative-ai", () => {
   }
   return {
     GoogleGenerativeAI,
-    SchemaType: { OBJECT: "OBJECT", STRING: "STRING", INTEGER: "INTEGER" },
+    SchemaType: { OBJECT: "OBJECT", STRING: "STRING", INTEGER: "INTEGER", ARRAY: "ARRAY" },
   };
 });
 
 import { analyzeDrawing } from "../gemini-adapter";
+import { UNKNOWN_CREATURE } from "../constants";
 
 const VALID_RESPONSE = {
-  archetype: "fox",
-  element: "Fire",
-  creatureName: "Emberfang",
-  description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
-  stats: { hp: 80, mp: 60, atk: 90, def: 70 },
-  rarity: 3,
+  creature_archetype: "fox",
+  creature_name: "Emberfang",
+  complexity: 60,
+  powers: ["fire", "shadow"],
+  summary_description: "A lithe fox with flame-tipped tails wreathed in shadow.",
   confidence: "high",
 };
 
@@ -44,71 +44,61 @@ describe("analyzeDrawing", () => {
     const result = await analyzeDrawing("base64imagedata");
 
     expect(result).toMatchObject({
-      archetype: "fox",
-      element: "Fire",
-      creatureName: "Emberfang",
-      description: "A lithe fox with flame-tipped tails that spiral upward like burning ribbons.",
-      stats: { hp: 80, mp: 60, atk: 90, def: 70 },
-      rarity: 3,
+      creature_archetype: "fox",
+      creature_name: "Emberfang",
+      complexity: 60,
+      powers: ["fire", "shadow"],
+      summary_description: "A lithe fox with flame-tipped tails wreathed in shadow.",
       confidence: "high",
     });
   });
 
-  it("routes unknown archetype to mysterious fallback", async () => {
-    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, archetype: "dragon" }));
-
-    const result = await analyzeDrawing("base64imagedata");
-
-    expect(result.archetype).toBe("mysterious");
-  });
-
-  it("returns mysterious creature when confidence is low", async () => {
+  it("returns UNKNOWN_CREATURE when confidence is low", async () => {
     mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, confidence: "low" }));
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
     expect(result.confidence).toBe("low");
-    expect([4, 5]).toContain(result.rarity);
   });
 
-  it("returns mysterious creature when Gemini returns malformed JSON", async () => {
+  it("returns UNKNOWN_CREATURE when Gemini returns malformed JSON", async () => {
     mockGeminiText("not valid json at all %%%");
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
   });
 
-  it("returns mysterious creature when GEMINI_API_KEY is missing", async () => {
+  it("returns UNKNOWN_CREATURE when GEMINI_API_KEY is missing", async () => {
     delete process.env.GEMINI_API_KEY;
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
   });
 
-  it("returns mysterious creature when Gemini throws a network error", async () => {
+  it("returns UNKNOWN_CREATURE when Gemini throws a network error", async () => {
     mockGenerateContent.mockRejectedValue(new Error("network failure"));
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
   });
 
-  it("routes off-enum element to mysterious fallback", async () => {
-    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, element: "lightning", rarity: 3 }));
+  it("returns UNKNOWN_CREATURE when Gemini returns valid JSON that fails Zod schema (empty powers)", async () => {
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, powers: [] }));
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
   });
 
-  it("returns mysterious creature when Gemini returns valid JSON that fails Zod schema", async () => {
-    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, rarity: 99 }));
+  it("returns UNKNOWN_CREATURE when complexity is out of range", async () => {
+    mockGeminiText(JSON.stringify({ ...VALID_RESPONSE, complexity: 999 }));
 
     const result = await analyzeDrawing("base64imagedata");
 
-    expect(result.archetype).toBe("mysterious");
+    expect(result).toEqual(UNKNOWN_CREATURE);
   });
 });

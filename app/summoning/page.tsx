@@ -6,28 +6,6 @@ import { CreatureAttributes, CreatureAttributesSchema } from "@/src/lib/analyzer
 import { useCreatureAnimation } from "@/src/lib/summoner/useCreatureAnimation";
 import { CreatureStatsCard } from "@/components/CreatureStatsCard";
 
-const ELEMENT_FALLBACK: Record<string, string> = {
-  Normal:   "⭐",
-  Fire:     "🔥",
-  Water:    "💧",
-  Grass:    "🌿",
-  Electric: "⚡",
-  Ice:      "❄️",
-  Fighting: "🥊",
-  Poison:   "☠️",
-  Ground:   "🏔️",
-  Flying:   "🌬️",
-  Psychic:  "🔮",
-  Bug:      "🐛",
-  Rock:     "🪨",
-  Ghost:    "👻",
-  Dragon:   "🐉",
-  Dark:     "🌑",
-  Steel:    "⚙️",
-  Fairy:    "🧚",
-  Stellar:  "✨",
-};
-
 const PARTICLE_COUNT = 12;
 
 export default function SummoningPage() {
@@ -67,8 +45,8 @@ export default function SummoningPage() {
       .catch(() => setStatus("done"));
   }, []);
 
-  // Element drives glow colour; default to Normal until attrs arrive.
-  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(attrs?.element ?? "Normal");
+  const dominantPower = attrs?.powers[0] ?? "mystery";
+  const { floatClass, glowStyle, glowColor } = useCreatureAnimation(dominantPower);
 
   const particles = useMemo(
     () =>
@@ -81,7 +59,6 @@ export default function SummoningPage() {
     []
   );
 
-  const fallbackEmoji = attrs ? (ELEMENT_FALLBACK[attrs.element] ?? "✨") : "✨";
   const revealed = status === "done" && !!attrs;
 
   return (
@@ -91,18 +68,18 @@ export default function SummoningPage() {
         {status === "loading"
           ? "Summoning…"
           : revealed
-            ? attrs!.creatureName
+            ? attrs!.creature_name
             : status === "error"
               ? "Summoning"
               : ""}
       </h1>
       {revealed && (
-        <p className="capitalize text-zinc-500 text-sm mb-5">{attrs!.archetype}</p>
+        <p className="capitalize text-zinc-500 text-sm mb-5">{attrs!.creature_archetype}</p>
       )}
 
       <div className="relative w-64 h-64 mb-6 flex items-center justify-center">
         {status === "loading" && (
-          <div className="text-6xl animate-pulse" aria-hidden>{fallbackEmoji}</div>
+          <div className="text-6xl animate-pulse" aria-hidden>✨</div>
         )}
 
         {revealed && (
@@ -136,11 +113,11 @@ export default function SummoningPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={imageDataUrl}
-                    alt={attrs!.creatureName}
+                    alt={attrs!.creature_name}
                     className="w-56 h-56 object-contain"
                   />
                 ) : (
-                  <div className="text-8xl" aria-hidden>{fallbackEmoji}</div>
+                  <div className="text-8xl" aria-hidden>✨</div>
                 )}
               </div>
             </div>

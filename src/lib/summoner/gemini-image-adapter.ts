@@ -1,13 +1,6 @@
 import * as jpeg from "jpeg-js";
 import { PNG } from "pngjs";
-import { ARCHETYPE_REGISTRY } from "../analyzer/archetypes";
 import { CreatureAttributes } from "../analyzer/types";
-
-const DESCRIPTION_MAX_LENGTH = 900;
-
-function sanitizeDescription(description: string): string {
-  return description.replace(/[\r\n\t\x00-\x1F\x7F]/g, " ").trim().slice(0, DESCRIPTION_MAX_LENGTH);
-}
 
 const NEAR_WHITE_THRESHOLD = 242;
 const EDGE_FEATHER_ALPHA = 128;
@@ -76,26 +69,27 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
   return pngBuf.toString("base64");
 }
 
-const ELEMENT_PALETTE: Record<string, string> = {
-  Normal: "warm beige and soft white",
-  Fire: "crimson and orange",
-  Water: "cyan and deep blue",
-  Grass: "leaf green and golden yellow",
-  Electric: "bright yellow and white sparks",
-  Ice: "pale blue and crystal white",
-  Fighting: "deep red and earthy brown",
-  Poison: "toxic purple and acid green",
-  Ground: "sandy brown and terracotta",
-  Flying: "sky blue and cloud white",
-  Psychic: "hot pink and lavender",
-  Bug: "lime green and carapace brown",
-  Rock: "granite grey and sandstone",
-  Ghost: "dark indigo and pale violet",
-  Dragon: "midnight blue and metallic gold",
-  Dark: "charcoal black and deep crimson",
-  Steel: "silver and metallic blue",
-  Fairy: "rose pink and iridescent white",
-  Stellar: "prismatic rainbow and starlight silver",
+// Dominant power drives colour palette (most-frequent power = powers[0]).
+const POWER_PALETTE: Record<string, string> = {
+  fire:      "crimson and orange",
+  flame:     "crimson and orange",
+  water:     "cyan and deep blue",
+  lightning: "bright yellow and white sparks",
+  electric:  "bright yellow and white sparks",
+  ice:       "pale blue and crystal white",
+  shadow:    "charcoal black and deep crimson",
+  dark:      "charcoal black and deep crimson",
+  light:     "rose pink and iridescent white",
+  wind:      "sky blue and cloud white",
+  air:       "sky blue and cloud white",
+  nature:    "leaf green and golden yellow",
+  earth:     "sandy brown and terracotta",
+  ground:    "sandy brown and terracotta",
+  mystery:   "prismatic rainbow and starlight silver",
+  ghost:     "dark indigo and pale violet",
+  psychic:   "hot pink and lavender",
+  poison:    "toxic purple and acid green",
+  rock:      "granite grey and sandstone",
 };
 
 const RARITY_MODIFIER: Record<number, string> = {
@@ -110,35 +104,20 @@ const RARITY_MODIFIER: Record<number, string> = {
 // (e.g. anime/chibi, watercolour) without touching the content/data path.
 const ART_STYLE_PROMPT =
   "Modern isometric 16-bit pixel art sprite, highly detailed blocky pixel art, " +
-  "crisp pixel edges, rich shading and highlights, nostalgic Pokémon-style sprite, " +
+  "crisp pixel edges, rich shading and highlights, nostalgic game-style sprite, " +
   "no outer glow, no bloom, no aura halo around the creature.";
 
-// Uniform random sample without replacement (partial Fisher–Yates).
-// `Array.sort(() => Math.random() - 0.5)` is a biased shuffle, so use this instead.
-function sampleInspirations(pool: readonly string[], count: number): string[] {
-  const copy = [...pool];
-  const n = Math.min(count, copy.length);
-  for (let i = 0; i < n; i++) {
-    const j = i + Math.floor(Math.random() * (copy.length - i));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy.slice(0, n);
-}
-
 export function buildCreaturePrompt(attrs: CreatureAttributes): string {
-  const palette = ELEMENT_PALETTE[attrs.element] ?? "silver and grey";
-  const rarityMod = RARITY_MODIFIER[attrs.rarity] ?? "common";
-  const blueprint = ARCHETYPE_REGISTRY[attrs.archetype];
-  const count = Math.random() < 0.5 ? 1 : 2;
-  const inspirations = sampleInspirations(blueprint.commonInspirations, count).join(", ");
-  const description = sanitizeDescription(attrs.description);
+  const dominantPower = (attrs.powers[0] ?? "mystery").toLowerCase();
+  const palette = POWER_PALETTE[dominantPower] ?? "silver and grey";
+  const rarity = Math.max(1, Math.ceil(attrs.complexity / 20));
+  const rarityMod = RARITY_MODIFIER[rarity] ?? "common";
 
   return [
-    description,
+    attrs.summary_description,
     `${palette} color palette.`,
     `${rarityMod}.`,
-    `Inspired by ${inspirations}.`,
-    `Full body visible, facing left, centered on plain white background, no text, no watermark, no border.`,
+    `${attrs.creature_archetype} creature, full body visible, facing left, centered on plain white background, no text, no watermark, no border.`,
     ART_STYLE_PROMPT,
   ].join(" ");
 }
@@ -204,32 +183,29 @@ export async function generateCreatureSprite(
 
 // SVG placeholder — renders when image gen quota is unavailable (free tier).
 // Used by /api/summon as fallback so the UI flow is testable without a paid key.
-const ELEMENT_SVG_COLOR: Record<string, [string, string]> = {
-  Normal: ["#a8a878", "#c8c8a0"],
-  Fire: ["#dc2626", "#f97316"],
-  Water: ["#0284c7", "#22d3ee"],
-  Grass: ["#16a34a", "#ca8a04"],
-  Electric: ["#eab308", "#fef9c3"],
-  Ice: ["#7dd3fc", "#e0f2fe"],
-  Fighting: ["#b91c1c", "#78350f"],
-  Poison: ["#7e22ce", "#65a30d"],
-  Ground: ["#b45309", "#c2410c"],
-  Flying: ["#38bdf8", "#e0f2fe"],
-  Psychic: ["#ec4899", "#c084fc"],
-  Bug: ["#65a30d", "#a16207"],
-  Rock: ["#78716c", "#d6d3d1"],
-  Ghost: ["#4338ca", "#c4b5fd"],
-  Dragon: ["#1e3a8a", "#d97706"],
-  Dark: ["#1c1917", "#991b1b"],
-  Steel: ["#94a3b8", "#1d4ed8"],
-  Fairy: ["#f472b6", "#f0fdf4"],
-  Stellar: ["#6d28d9", "#e0f2fe"],
+const POWER_SVG_COLOR: Record<string, [string, string]> = {
+  fire:      ["#dc2626", "#f97316"],
+  flame:     ["#dc2626", "#f97316"],
+  water:     ["#0284c7", "#22d3ee"],
+  lightning: ["#eab308", "#fef9c3"],
+  electric:  ["#eab308", "#fef9c3"],
+  ice:       ["#7dd3fc", "#e0f2fe"],
+  shadow:    ["#1c1917", "#991b1b"],
+  dark:      ["#1c1917", "#991b1b"],
+  light:     ["#f472b6", "#f0fdf4"],
+  wind:      ["#38bdf8", "#e0f2fe"],
+  nature:    ["#16a34a", "#ca8a04"],
+  earth:     ["#b45309", "#c2410c"],
+  mystery:   ["#6d28d9", "#e0f2fe"],
+  ghost:     ["#4338ca", "#c4b5fd"],
+  psychic:   ["#ec4899", "#c084fc"],
 };
 
 export function buildFallbackSvg(attrs: CreatureAttributes): string {
-  const [c1, c2] = ELEMENT_SVG_COLOR[attrs.element] ?? ["#6b7280", "#d1d5db"];
-  const stars = attrs.rarity;
-  const emoji = attrs.archetype.charAt(0).toUpperCase();
+  const dominantPower = (attrs.powers[0] ?? "mystery").toLowerCase();
+  const [c1, c2] = POWER_SVG_COLOR[dominantPower] ?? ["#6b7280", "#d1d5db"];
+  const rarity = Math.max(1, Math.ceil(attrs.complexity / 20));
+  const emoji = attrs.creature_archetype.charAt(0).toUpperCase();
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
@@ -241,8 +217,8 @@ export function buildFallbackSvg(attrs: CreatureAttributes): string {
   <rect width="200" height="200" fill="white"/>
   <circle cx="100" cy="100" r="80" fill="url(#bg)" stroke="${c1}" stroke-width="2" opacity="0.8"/>
   <text x="100" y="115" text-anchor="middle" font-size="64" font-family="monospace">${emoji}</text>
-  <text x="100" y="155" text-anchor="middle" font-size="12" fill="${c1}" font-family="monospace" font-weight="bold">${attrs.archetype.toUpperCase()}</text>
-  <text x="100" y="175" text-anchor="middle" font-size="14" fill="#d97706" font-family="monospace">${"★".repeat(stars)}${"☆".repeat(5 - stars)}</text>
+  <text x="100" y="155" text-anchor="middle" font-size="12" fill="${c1}" font-family="monospace" font-weight="bold">${attrs.creature_archetype.toUpperCase()}</text>
+  <text x="100" y="175" text-anchor="middle" font-size="14" fill="#d97706" font-family="monospace">${"★".repeat(rarity)}${"☆".repeat(5 - rarity)}</text>
   <text x="100" y="192" text-anchor="middle" font-size="9" fill="#9ca3af" font-family="monospace">PROTOTYPE PLACEHOLDER</text>
 </svg>`;
 
