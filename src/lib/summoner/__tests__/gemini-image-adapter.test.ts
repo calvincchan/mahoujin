@@ -21,18 +21,51 @@ describe("buildCreaturePrompt", () => {
 
   it("includes the creature_archetype in the prompt", () => {
     const prompt = buildCreaturePrompt(BASE_ATTRS);
-    expect(prompt).toContain("fox creature");
+    expect(prompt).toContain("fox, full body visible");
   });
 
-  it("derives colour palette from the dominant power (powers[0])", () => {
+  it("does not include 'creature' suffix after archetype", () => {
     const prompt = buildCreaturePrompt(BASE_ATTRS);
+    expect(prompt).not.toContain("fox creature");
+  });
+
+  it("derives colour palette from dominant power by frequency count", () => {
+    // fire appears twice → dominant; water once → secondary
+    const attrs = { ...BASE_ATTRS, powers: ["water", "fire", "fire"] };
+    const prompt = buildCreaturePrompt(attrs);
     expect(prompt).toContain("crimson and orange");
   });
 
-  it("uses water palette when dominant power is water", () => {
-    const attrs = { ...BASE_ATTRS, powers: ["water", "ice"] };
+  it("uses water palette when water is dominant by frequency", () => {
+    const attrs = { ...BASE_ATTRS, powers: ["water", "water", "fire"] };
     const prompt = buildCreaturePrompt(attrs);
     expect(prompt).toContain("cyan and deep blue");
+  });
+
+  it("includes secondary power hint when two distinct powers exist", () => {
+    const prompt = buildCreaturePrompt(BASE_ATTRS); // fire dominant, shadow secondary
+    expect(prompt).toContain("with hints of shadow");
+  });
+
+  it("includes up to two secondary power hints", () => {
+    // fire appears twice → dominant; shadow + ice are distinct secondaries
+    const attrs = { ...BASE_ATTRS, powers: ["fire", "fire", "shadow", "ice"] };
+    const prompt = buildCreaturePrompt(attrs);
+    expect(prompt).toContain("with hints of shadow and ice");
+  });
+
+  it("omits hints clause when only one distinct power", () => {
+    const attrs = { ...BASE_ATTRS, powers: ["fire", "fire"] };
+    const prompt = buildCreaturePrompt(attrs);
+    expect(prompt).not.toContain("hints");
+  });
+
+  it("caps summary_description at 500 characters", () => {
+    const longDesc = "A".repeat(600);
+    const attrs = { ...BASE_ATTRS, summary_description: longDesc };
+    const prompt = buildCreaturePrompt(attrs);
+    expect(prompt).toContain("A".repeat(500));
+    expect(prompt).not.toContain("A".repeat(501));
   });
 
   it("derives rarity modifier from complexity", () => {
