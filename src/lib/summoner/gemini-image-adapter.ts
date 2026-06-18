@@ -69,7 +69,29 @@ export async function jpegToTransparentPng(jpegBase64: string): Promise<string> 
   return pngBuf.toString("base64");
 }
 
-// Dominant power drives colour palette (most-frequent power = powers[0]).
+function computeDominantPower(powers: string[]): string {
+  const freq: Record<string, number> = {};
+  for (const p of powers) {
+    const key = p.toLowerCase();
+    freq[key] = (freq[key] ?? 0) + 1;
+  }
+  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function computeSecondaryPowers(powers: string[], dominant: string): string[] {
+  const seen = new Set<string>([dominant]);
+  const result: string[] = [];
+  for (const p of powers) {
+    const key = p.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(key);
+      if (result.length === 2) break;
+    }
+  }
+  return result;
+}
+
 const POWER_PALETTE: Record<string, string> = {
   fire:      "crimson and orange",
   flame:     "crimson and orange",
@@ -108,16 +130,21 @@ const ART_STYLE_PROMPT =
   "no outer glow, no bloom, no aura halo around the creature.";
 
 export function buildCreaturePrompt(attrs: CreatureAttributes): string {
-  const dominantPower = (attrs.powers[0] ?? "mystery").toLowerCase();
-  const palette = POWER_PALETTE[dominantPower] ?? "silver and grey";
+  const dominant = computeDominantPower(attrs.powers);
+  const secondaries = computeSecondaryPowers(attrs.powers, dominant);
+  const palette = POWER_PALETTE[dominant] ?? "silver and grey";
   const rarity = Math.max(1, Math.ceil(attrs.complexity / 20));
   const rarityMod = RARITY_MODIFIER[rarity] ?? "common";
+  const description = attrs.summary_description.slice(0, 500);
+  const paletteClause = secondaries.length
+    ? `${palette} color palette, with hints of ${secondaries.join(" and ")}.`
+    : `${palette} color palette.`;
 
   return [
-    attrs.summary_description,
-    `${palette} color palette.`,
+    description,
+    `${attrs.creature_archetype}, full body visible, facing left, centered on plain white background, no text, no watermark, no border.`,
+    paletteClause,
     `${rarityMod}.`,
-    `${attrs.creature_archetype} creature, full body visible, facing left, centered on plain white background, no text, no watermark, no border.`,
     ART_STYLE_PROMPT,
   ].join(" ");
 }
@@ -202,8 +229,8 @@ const POWER_SVG_COLOR: Record<string, [string, string]> = {
 };
 
 export function buildFallbackSvg(attrs: CreatureAttributes): string {
-  const dominantPower = (attrs.powers[0] ?? "mystery").toLowerCase();
-  const [c1, c2] = POWER_SVG_COLOR[dominantPower] ?? ["#6b7280", "#d1d5db"];
+  const dominant = computeDominantPower(attrs.powers);
+  const [c1, c2] = POWER_SVG_COLOR[dominant] ?? ["#6b7280", "#d1d5db"];
   const rarity = Math.max(1, Math.ceil(attrs.complexity / 20));
   const emoji = attrs.creature_archetype.charAt(0).toUpperCase();
 
@@ -218,8 +245,7 @@ export function buildFallbackSvg(attrs: CreatureAttributes): string {
   <circle cx="100" cy="100" r="80" fill="url(#bg)" stroke="${c1}" stroke-width="2" opacity="0.8"/>
   <text x="100" y="115" text-anchor="middle" font-size="64" font-family="monospace">${emoji}</text>
   <text x="100" y="155" text-anchor="middle" font-size="12" fill="${c1}" font-family="monospace" font-weight="bold">${attrs.creature_archetype.toUpperCase()}</text>
-  <text x="100" y="175" text-anchor="middle" font-size="14" fill="#d97706" font-family="monospace">${"★".repeat(rarity)}${"☆".repeat(5 - rarity)}</text>
-  <text x="100" y="192" text-anchor="middle" font-size="9" fill="#9ca3af" font-family="monospace">PROTOTYPE PLACEHOLDER</text>
+  <text x="100" y="178" text-anchor="middle" font-size="14" fill="#d97706" font-family="monospace">${"★".repeat(rarity)}${"☆".repeat(5 - rarity)}</text>
 </svg>`;
 
   const b64 = Buffer.from(svg).toString("base64");
