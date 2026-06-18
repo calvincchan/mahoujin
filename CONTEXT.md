@@ -19,7 +19,7 @@ A short whimsical name (1–3 words, Title Case) the analysis LLM invents for th
 _Avoid_: name (ambiguous — qualify as Creature Name).
 
 ### Powers
-An array of elemental symbol strings found anywhere in the Mahoujin drawing (e.g. `["fire", "fire", "water", "lightning"]`). Minimum 1, maximum 8. Duplicate entries signal dominance — a symbol that appears three times carries more weight than one that appears once. The LLM infers at least one power even when the drawing is sparse. Powers drive colour palette in image generation.
+An array of elemental symbol strings found anywhere in the Mahoujin drawing (e.g. `["fire", "fire", "water", "lightning"]`). Minimum 1, maximum 8. Duplicate entries signal dominance — a symbol that appears three times carries more weight than one that appears once. The LLM infers at least one power even when the drawing is sparse. The dominant power is the most-frequent entry, computed by frequency count at the summoning stage. Powers drive colour palette in image generation.
 _Avoid_: element (the old single-type field); cardinal powers (direction no longer matters).
 
 ### Complexity
@@ -33,7 +33,7 @@ A single sentence blending the Creature Archetype with its dominant Powers, auth
 _Avoid_: description (the old ~100-word field); trait.
 
 ### Summoning
-The stage that turns Creature Attributes into a rendered creature sprite via the image-generation prompt. (Stage 2 — not yet updated to consume new schema.)
+The stage that turns Creature Attributes into a rendered creature sprite via the image-generation prompt. Derives dominant power by frequency count from Powers, maps it to a colour palette, and combines with Summary Description, Creature Archetype, and Complexity-derived rarity to build the final image prompt.
 
 ### Crystal Shelf
 The player's collection of kept creatures, persisted in IndexedDB.
