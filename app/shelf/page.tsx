@@ -12,7 +12,7 @@ const MIN_SLOTS = 9;
 const RELEASE_PARTICLE_COUNT = 14;
 
 function OrbSlot({ creature, onClick }: { creature: SavedCreature; onClick: () => void }) {
-  const { primary, secondary } = getPowerOrbColor(creature.powers);
+  const { primary, secondary } = getPowerOrbColor(creature.powers ?? []);
 
   return (
     <button
@@ -66,7 +66,7 @@ function DetailOverlay({
   onRelease: (id: string) => Promise<void>;
   releasing: boolean;
 }) {
-  const dominantPower = creature.powers[0] ?? "mystery";
+  const dominantPower = creature.powers?.[0] ?? "mystery";
   const { floatClass, glowStyle, glowColor } = useCreatureAnimation(dominantPower);
 
   const particles = useMemo(
